@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пополнение баланса - Sultan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at 30% 20%, #2a1508 0%, #0a0502 100%);
+            min-height: 100vh;
+            font-family: 'Oswald', 'Playfair Display', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 20% 40%, rgba(212, 175, 55, 0.06) 2px, transparent 2px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+        
+        .deposit-container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .deposit-card {
+            background: rgba(10, 6, 4, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.4s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .deposit-header {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .deposit-header h1 {
+            color: #1a0f08;
+            font-size: 32px;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .deposit-header p {
+            color: #2a1a0a;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 15, 8, 0.7);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-btn:hover {
+            background: #8b0000;
+            transform: scale(1.05);
+        }
+        
+        .test-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #1a0f08;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .deposit-body {
+            padding: 35px;
+        }
+        
+        .balance-info {
+            background: linear-gradient(135deg, #2a1f12, #1a1208);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .balance-label {
+            color: #c9af7b;
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .balance-amount {
+            color: #d4af37;
+            font-size: 42px;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .balance-amount span {
+            font-size: 20px;
+        }
+        
+        .converter-box {
+            background: rgba(30, 20, 12, 0.6);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .converter-title {
+            color: #d4af37;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .rate-info {
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 14px;
+            color: #c9af7b;
+        }
+        
+        .rate-info strong {
+            color: #d4af37;
+            font-size: 18px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            color: #c9af7b;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .currency-input {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .currency-input input {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 50px;
+            color: #faf4e0;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .currency-input input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+        
+        .currency-symbol {
+            position: absolute;
+            left: 18px;
+            font-size: 20px;
+            color: #d4af37;
+            font-weight: bold;
+        }
+        
+        .conversion-result {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .conversion-result .label {
+            color: #aa9977;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .conversion-result .value {
+            color: #d4af37;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            padding: 10px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Oswald', sans-serif;
+            font-weight: bold;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+            transform: scale(1.02);
+        }
+        
+        .pay-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+        
+        .pay-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+        
+        .pay-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #c9af7b;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .back-link:hover {
+            color: #d4af37;
+        }
+        
+        .error-message {
+            background: rgba(139, 0, 0, 0.3);
+            border: 1px solid #8b0000;
+            border-radius: 15px;
+            padding: 12px;
+            margin-top: 15px;
+            color: #ff8888;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 500px) {
+            .deposit-body {
+                padding: 25px;
+            }
+            .balance-amount {
+                font-size: 32px;
+            }
+            .preset-btn {
+                font-size: 12px;
+                padding: 8px;
+            }
+            .pay-btn {
+                font-size: 16px;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="deposit-container">
+        <div class="deposit-card">
+            <div class="deposit-header">
+                <div class="test-badge">🧪 ТЕСТОВАЯ ФУНКЦИЯ</div>
+                <button class="close-btn" onclick="goBack()">✕</button>
+                <h1>💰 ПОПОЛНЕНИЕ</h1>
+                <p>Пополните игровой баланс</p>
+            </div>
+            <div class="deposit-body">
+                <div class="balance-info">
+                    <div class="balance-label">ТЕКУЩИЙ БАЛАНС</div>
+                    <div class="balance-amount">
+                        <span>💰</span> <span id="currentBalance">0</span> <span>крон</span>
+                    </div>
+                </div>
+                
+                <div class="converter-box">
+                    <div class="converter-title">💱 КОНВЕРТЕР ВАЛЮТ</div>
+                    <div class="rate-info">
+                        📊 Курс: <strong>1 крона = 1.2 рубля</strong>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">💰 Сумма в кронах</label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">🎴</span>
+                            <input type="number" id="coinsAmount" placeholder="Введите сумму" value="1000" min="1" step="100">
+                        </div>
+                    </div>
+                    
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="setPreset(500)">500 крон</button>
+                        <button class="preset-btn" onclick="setPreset(1000)">1000 крон</button>
+                        <button class="preset-btn" onclick="setPreset(5000)">5000 крон</button>
+                        <button class="preset-btn" onclick="setPreset(10000)">10000 крон</button>
+                    </div>
+                    
+                    <div class="conversion-result">
+                        <div class="label">💸 К ОПЛАТЕ (РУБЛИ)</div>
+                        <div class="value" id="rubAmount">0 ₽</div>
+                    </div>
+                </div>
+                
+                <button class="pay-btn" onclick="processPayment()">
+                    💳 ОПЛАТИТЬ
+                </button>
+                
+                <a href="lobby.html" class="back-link">← Вернуться в лобби</a>
+                
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let currentBalance = 0;
+        const EXCHANGE_RATE = 1.2; // 1 крона = 1.2 рубля
+        
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/auth/check');
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/';
+                    return;
+                }
+                currentUser = data.username;
+                currentBalance = data.stats?.coins || 0;
+                document.getElementById('currentBalance').textContent = currentBalance.toLocaleString();
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                window.location.href = '/';
+            }
+        }
+        
+        function calculateRubles(coins) {
+            return (coins * EXCHANGE_RATE).toFixed(2);
+        }
+        
+        function updateConversion() {
+            const coinsInput = document.getElementById('coinsAmount');
+            let coins = parseInt(coinsInput.value);
+            if (isNaN(coins) || coins < 1) {
+                coins = 0;
+                coinsInput.value = 1;
+                coins = 1;
+            }
+            const rubles = calculateRubles(coins);
+            document.getElementById('rubAmount').textContent = `${rubles} ₽`;
+        }
+        
+        function setPreset(amount) {
+            document.getElementById('coinsAmount').value = amount;
+            updateConversion();
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        }
+        
+        async function processPayment() {
+            const coinsInput = document.getElementById('coinsAmount');
+            let coinsAmount = parseInt(coinsInput.value);
+            
+            if (isNaN(coinsAmount) || coinsAmount < 1) {
+                showError('Введите корректную сумму (минимум 1 крона)');
+                return;
+            }
+            
+            const rubAmount = calculateRubles(coinsAmount);
+            
+            // Тестовое сообщение
+            const testMessage = `🧪 ТЕСТОВАЯ ФУНКЦИЯ\n\nСумма: ${coinsAmount.toLocaleString()} крон\nК оплате: ${rubAmount} ₽\n\nЭто тестовый режим. Деньги не будут списаны.\nБаланс будет пополнен автоматически.`;
+            
+            const confirmed = confirm(testMessage + '\n\nПродолжить?');
+            
+            if (!confirmed) return;
+            
+            // Блокируем кнопку
+            const payBtn = document.querySelector('.pay-btn');
+            payBtn.disabled = true;
+            payBtn.textContent = '⏳ ОБРАБОТКА...';
+            
+            try {
+                // Отправляем запрос на пополнение
+                const response = await fetch('/api/auth/add-coins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, amount: coinsAmount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentBalance = data.coins;
+                    
+                    // Показываем сообщение об успехе
+                    alert(`✅ Пополнение выполнено!\n\n➕ Добавлено: ${coinsAmount.toLocaleString()} крон\n💰 Новый баланс: ${currentBalance.toLocaleString()} крон\n💸 Сумма к оплате: ${rubAmount} ₽\n\n(Это тестовый режим, деньги не списаны)`);
+                    
+                    // Сохраняем в sessionStorage что баланс обновлен
+                    sessionStorage.setItem('balanceUpdated', 'true');
+                    sessionStorage.setItem('newBalance', currentBalance);
+                    
+                    // Перенаправляем в профиль
+                    window.location.href = '/lobby.html?highlight=profile';
+                } else {
+                    showError(data.error || 'Ошибка при пополнении');
+                    payBtn.disabled = false;
+                    payBtn.textContent = '💳 ОПЛАТИТЬ';
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showError('Ошибка соединения с сервером');
+                payBtn.disabled = false;
+                payBtn.textContent = '💳 ОПЛАТИТЬ';
+            }
+        }
+        
+        function goBack() {
+            window.location.href = '/lobby.html';
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+            
+            const coinsInput = document.getElementById('coinsAmount');
+            coinsInput.addEventListener('input', updateConversion);
+            coinsInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    processPayment();
+                }
+            });
+            
+            updateConversion();
+        });
+    </script>
+</body>
+</html>

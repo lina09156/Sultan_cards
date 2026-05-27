@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Sultan Cards</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Стили для чата */
+        .chat-container {
+            position: fixed;
+            bottom: 120px;
+            left: 20px;
+            width: 320px;
+            background: rgba(10, 6, 4, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-header {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #1a0f08, #0a0604);
+            border-bottom: 1px solid #d4af37;
+            border-radius: 18px 18px 0 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h3 {
+            color: #d4af37;
+            font-size: 16px;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .chat-header .chat-status {
+            font-size: 12px;
+            color: #4caf50;
+        }
+        
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chat-message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            animation: messageSlide 0.3s ease;
+        }
+        
+        .chat-message.own {
+            align-self: flex-end;
+        }
+        
+        .chat-message.other {
+            align-self: flex-start;
+        }
+        
+        .message-sender {
+            font-size: 11px;
+            color: #d4af37;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+        
+        .message-bubble {
+            background: rgba(30, 20, 12, 0.9);
+            padding: 8px 12px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            font-size: 13px;
+            color: #faf4e0;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .chat-message.own .message-bubble {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0f08;
+        }
+        
+        .message-sticker {
+            max-width: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .message-sticker:hover {
+            transform: scale(1.05);
+        }
+        
+        .message-sticker img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .chat-input-area {
+            padding: 12px;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1px solid #997a00;
+            border-radius: 25px;
+            color: #faf4e0;
+            font-size: 13px;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .chat-send-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            border-radius: 25px;
+            color: #1a0f08;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .chat-send-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .sticker-btn {
+            padding: 8px;
+            background: none;
+            border: 1px solid #d4af37;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        
+        .sticker-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
+        
+        .sticker-panel {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(10, 6, 4, 0.98);
+            backdrop-filter: blur(12px);
+            border-radius: 15px 15px 0 0;
+            padding: 12px;
+            border: 1px solid #d4af37;
+            border-bottom: none;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .sticker-panel.active {
+            display: flex;
+        }
+        
+        .sticker-option {
+            width: 60px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 10px;
+            padding: 5px;
+        }
+        
+        .sticker-option:hover {
+            transform: scale(1.1);
+            background: rgba(212, 175, 55, 0.2);
+        }
+        
+        .sticker-option img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #1a0f08;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+        
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 20px;
+            padding: 8px 15px;
+            max-width: 150px;
+            font-size: 12px;
+            color: #333;
+            font-family: 'Oswald', sans-serif;
+            z-index: 300;
+            animation: bubblePop 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid #d4af37;
+        }
+        
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        
+        .speech-bubble.sticker-bubble {
+            padding: 5px;
+            background: transparent;
+            border: none;
+        }
+        
+        .speech-bubble.sticker-bubble img {
+            max-width: 80px;
+            border-radius: 15px;
+        }
+        
+        @keyframes bubblePop {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .player-badge {
+            position: relative;
+        }
+        
+        @media (max-width: 700px) {
+            .chat-container {
+                width: 280px;
+                bottom: 100px;
+                left: 10px;
+            }
+            .chat-messages {
+                height: 250px;
+            }
+            .message-sticker {
+                max-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="minimal-exit" onclick="exitGame()" title="Выйти">✕</button>
+
+    <div id="gameContainer">
+        <div id="statusBar" class="status-toast" style="background: rgba(10, 6, 4, 0.92); border-left-color: #d4af37;">Ожидание...</div>
+
+        <div class="game-board">
+            <div class="player-badge player-top" id="playerTop">
+                <div class="badge-info">
+                    <div class="player-name">Оппонент 1</div>
+                    <div class="player-cards">🎴 <span>12</span></div>
+                </div>
+            </div>
+            
+            <div class="player-badge player-right" id="playerRight">
+                <div class="badge-info">
+                    <div class="player-name">Оппонент 2</div>
+                    <div class="player-cards">🎴 <span>12</span></div>
+                </div>
+            </div>
+            
+            <div class="main-table" id="tableZone">
+                <div class="table-pairs" id="tablePairs"></div>
+            </div>
+            
+            <div class="my-area">
+                <div id="myHand" class="hand"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Чат компонент -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header" onclick="toggleChat()">
+            <h3>💬 ЧАТ</h3>
+            <span class="chat-status" id="chatStatus">●</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message other">
+                <div class="message-sender">🤵 Система</div>
+                <div class="message-bubble">Добро пожаловать в Sultan! Используйте стикеры и чат для общения 🎴</div>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Введите сообщение..." maxlength="100">
+            <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
+            <button class="sticker-btn" onclick="toggleStickerPanel()">😊</button>
+        </div>
+        <div class="sticker-panel" id="stickerPanel"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/gameUI.js"></script>
+    <script>
+        // Глобальные переменные для чата
+        let chatCollapsed = false;
+        let currentPlayerName = null;
+        let currentChatSocket = null;
+        
+        // Проверяем, есть ли lobbyId в URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const lobbyId = urlParams.get('lobbyId');
+        
+        if (!lobbyId) {
+            // Если нет в URL, проверяем sessionStorage
+            const savedLobbyId = sessionStorage.getItem('currentLobbyId');
+            if (savedLobbyId) {
+                // Добавляем lobbyId в URL
+                window.location.href = `/game.html?lobbyId=${savedLobbyId}`;
+            }
+        }
+        
+        window.playerName = sessionStorage.getItem('playerName');
+        
+        // Функции чата
+        function toggleChat() {
+            const messages = document.getElementById('chatMessages');
+            const inputArea = document.querySelector('.chat-input-area');
+            const stickerPanel = document.getElementById('stickerPanel');
+            
+            if (!chatCollapsed) {
+                messages.style.display = 'none';
+                inputArea.style.display = 'none';
+                stickerPanel.classList.remove('active');
+                chatCollapsed = true;
+            } else {
+                messages.style.display = 'flex';
+                inputArea.style.display = 'flex';
+                chatCollapsed = false;
+            }
+        }
+        
+        function toggleStickerPanel() {
+            const panel = document.getElementById('stickerPanel');
+            panel.classList.toggle('active');
+        }
+        
+        function loadStickers() {
+            const panel = document.getElementById('stickerPanel');
+            panel.innerHTML = '';
+            for (let i = 1; i <= 8; i++) {
+                const stickerDiv = document.createElement('div');
+                stickerDiv.className = 'sticker-option';
+                stickerDiv.onclick = () => sendSticker(i);
+                const img = document.createElement('img');
+                img.src = `/stickers/sticker (${i}).png`;
+                img.alt = `Стикер ${i}`;
+                img.onerror = () => {
+                    // Заглушка только если файл не найден
+                    img.style.display = 'none';
+                    const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                    stickerDiv.textContent = emojis[i-1];
+                    stickerDiv.style.fontSize = '32px';
+                    stickerDiv.style.textAlign = 'center';
+                };
+                stickerDiv.appendChild(img);
+                panel.appendChild(stickerDiv);
+            }
+        }
+        
+        function sendSticker(stickerId) {
+            const currentLobbyId = sessionStorage.getItem('currentLobbyId') || lobbyId;
+            
+            console.log('📤 Отправка стикера в игру:', stickerId, 'игрок:', currentPlayerName, 'лобби:', currentLobbyId);
+            
+            if (currentChatSocket && currentPlayerName && currentLobbyId) {
+                currentChatSocket.emit('chatSticker', {
+                    username: currentPlayerName,
+                    stickerId: stickerId,
+                    lobbyId: currentLobbyId
+                });
+                toggleStickerPanel();
+            } else {
+                console.error('Не удалось отправить стикер:', { 
+                    socket: !!currentChatSocket, 
+                    playerName: currentPlayerName, 
+                    lobbyId: currentLobbyId
+                });
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            const currentLobbyId = sessionStorage.getItem('currentLobbyId') || lobbyId;
+            
+            console.log('📤 Отправка сообщения в игру:', message, 'игрок:', currentPlayerName, 'лобби:', currentLobbyId);
+            
+            if (message && currentChatSocket && currentPlayerName && currentLobbyId) {
+                currentChatSocket.emit('chatMessage', {
+                    username: currentPlayerName,
+                    message: message,
+                    lobbyId: currentLobbyId
+                });
+                input.value = '';
+            } else {
+                console.error('Не удалось отправить сообщение:', {
+                    message: !!message,
+                    socket: !!currentChatSocket, 
+                    playerName: currentPlayerName, 
+                    lobbyId: currentLobbyId
+                });
+            }
+        }
+        
+        function addMessageToChat(username, message, isSticker = false, stickerId = null) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${username === currentPlayerName ? 'own' : 'other'}`;
+            
+            const senderSpan = document.createElement('div');
+            senderSpan.className = 'message-sender';
+            senderSpan.textContent = username === currentPlayerName ? 'Вы' : username;
+            
+            const bubbleDiv = document.createElement('div');
+            
+            if (isSticker && stickerId) {
+                bubbleDiv.className = 'message-sticker';
+                const img = document.createElement('img');
+                img.src = `/stickers/sticker (${stickerId}).png`;
+                img.alt = `Стикер ${stickerId}`;
+                img.onerror = () => {
+                    const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                    img.style.display = 'none';
+                    bubbleDiv.textContent = emojis[stickerId - 1];
+                    bubbleDiv.style.fontSize = '32px';
+                };
+                bubbleDiv.appendChild(img);
+            } else {
+                bubbleDiv.className = 'message-bubble';
+                bubbleDiv.textContent = message;
+            }
+            
+            messageDiv.appendChild(senderSpan);
+            messageDiv.appendChild(bubbleDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            if (username !== currentPlayerName) {
+                showSpeechBubble(username, message, isSticker, stickerId);
+            }
+        }
+        
+        function showSpeechBubble(username, message, isSticker, stickerId) {
+            let playerElement = null;
+            const players = document.querySelectorAll('.player-badge');
+            
+            for (let player of players) {
+                const nameElement = player.querySelector('.player-name');
+                if (nameElement && nameElement.textContent === username) {
+                    playerElement = player;
+                    break;
+                }
+            }
+            
+            if (!playerElement) return;
+            
+            const rect = playerElement.getBoundingClientRect();
+            const bubble = document.createElement('div');
+            bubble.className = `speech-bubble ${isSticker ? 'sticker-bubble' : ''}`;
+            
+            if (isSticker && stickerId) {
+                const img = document.createElement('img');
+                img.src = `/stickers/sticker (${stickerId}).png`;
+                img.alt = `Стикер ${stickerId}`;
+                img.onerror = () => {
+                    const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                    bubble.textContent = emojis[stickerId - 1];
+                    bubble.style.fontSize = '32px';
+                    bubble.style.padding = '5px 15px';
+                };
+                bubble.appendChild(img);
+            } else {
+                bubble.textContent = message.length > 30 ? message.substring(0, 27) + '...' : message;
+            }
+            
+            let top = rect.top - 60;
+            let left = rect.left + rect.width / 2 - 50;
+            
+            bubble.style.position = 'fixed';
+            bubble.style.top = `${top}px`;
+            bubble.style.left = `${left}px`;
+            
+            document.body.appendChild(bubble);
+            
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.style.opacity = '0';
+                    bubble.style.transition = 'opacity 0.3s';
+                    setTimeout(() => bubble.remove(), 300);
+                }
+            }, 4000);
+        }
+        
+        function exitGame() {
+            if (confirm('Выйти из игры? Вы вернетесь в лобби.')) {
+                if (currentChatSocket) {
+                    currentChatSocket.emit('leaveGameChat', { username: currentPlayerName, lobbyId: lobbyId });
+                }
+                window.location.href = '/lobby.html';
+            }
+        }
+        
+        window.initGameChat = function(socket, playerName) {
+            currentChatSocket = socket;
+            currentPlayerName = playerName;
+            loadStickers();
+            
+            socket.on('chatMessage', (data) => {
+                addMessageToChat(data.username, data.message, false, null);
+            });
+            
+            socket.on('chatSticker', (data) => {
+                addMessageToChat(data.username, '', true, data.stickerId);
+            });
+            
+            const statusSpan = document.getElementById('chatStatus');
+            if (statusSpan) {
+                statusSpan.textContent = '●';
+                statusSpan.style.color = '#4caf50';
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('chatInput');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendChatMessage();
+                    }
+                });
+            }
+        });
+        
+        loadStickers();
+    </script>
+</body>
+</html>

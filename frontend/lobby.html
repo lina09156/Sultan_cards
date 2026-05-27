@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Лобби - Sultan</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            min-height: 100vh;
+            height: auto;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at 30% 20%, #2a1508 0%, #0a0502 100%);
+            min-height: 100vh;
+            font-family: 'Oswald', 'Playfair Display', sans-serif;
+            padding: 20px;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 20% 40%, rgba(212, 175, 55, 0.06) 2px, transparent 2px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 18px 30px;
+            background: rgba(10, 6, 4, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.3);
+        }
+        
+        .logo h1 {
+            color: #d4af37;
+            font-size: 28px;
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+            letter-spacing: 2px;
+        }
+        
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .compact-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 18px;
+            border-radius: 60px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .compact-profile:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+        }
+        
+        .compact-username {
+            color: #d4af37;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .compact-coins {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #2a1f12, #1a1208);
+            padding: 4px 12px;
+            border-radius: 30px;
+        }
+        
+        .compact-coins span:first-child {
+            font-size: 14px;
+        }
+        
+        .compact-coins span:last-child {
+            color: #d4af37;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: rgba(139, 0, 0, 0.3);
+            color: #ffaa88;
+            border: 1px solid #8b0000;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: auto;
+            margin: 0;
+        }
+        
+        .logout-btn:hover {
+            background: #8b0000;
+            color: white;
+            border-color: #d4af37;
+        }
+        
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-modal.active {
+            display: flex;
+        }
+        
+        .profile-card {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 40px;
+            width: 450px;
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .profile-header h2 {
+            color: #1a0f08;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-edit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(26, 15, 8, 0.7);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 6px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .profile-edit-btn:hover {
+            background: #1a0f08;
+            transform: scale(1.02);
+        }
+        
+        .profile-close {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(26, 15, 8, 0.7);
+            border: none;
+            color: #fff;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        
+        .profile-close:hover {
+            background: #8b0000;
+            transform: scale(1.05);
+        }
+        
+        .profile-body {
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 20, 12, 0.8);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            color: #d4af37;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #c9af7b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .coins-section {
+            background: linear-gradient(135deg, #2a1f12, #1a1208);
+            border-radius: 25px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #d4af37;
+        }
+        
+        .coins-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .coins-info .icon {
+            font-size: 28px;
+        }
+        
+        .coins-info .label {
+            font-size: 18px;
+            color: #c9af7b;
+        }
+        
+        .coins-info .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d4af37;
+        }
+        
+        .add-coins-btn {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: auto;
+            margin: 0;
+        }
+        
+        .add-coins-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        
+        .deposit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 3500;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .deposit-modal.active {
+            display: flex;
+        }
+        
+        .deposit-card {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 40px;
+            width: 500px;
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        .deposit-header {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .deposit-header h3 {
+            color: #1a0f08;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .deposit-header p {
+            color: #2a1a0a;
+            font-size: 12px;
+        }
+        
+        .test-badge {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #1a0f08;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .deposit-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(26, 15, 8, 0.7);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .deposit-close:hover {
+            background: #8b0000;
+        }
+        
+        .deposit-body {
+            padding: 30px;
+        }
+        
+        .rate-info {
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #c9af7b;
+        }
+        
+        .rate-info strong {
+            color: #d4af37;
+            font-size: 16px;
+        }
+        
+        .deposit-input-group {
+            margin-bottom: 20px;
+        }
+        
+        .deposit-input-group label {
+            color: #c9af7b;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .currency-input {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .currency-input input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 50px;
+            color: #faf4e0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .currency-input input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .currency-symbol {
+            position: absolute;
+            left: 18px;
+            font-size: 18px;
+            color: #d4af37;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            padding: 8px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Oswald', sans-serif;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+        
+        .conversion-result {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .conversion-result .label {
+            color: #aa9977;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .conversion-result .value {
+            color: #d4af37;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .deposit-pay-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Oswald', sans-serif;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .deposit-pay-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+        
+        .deposit-pay-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .deposit-loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .deposit-loading .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #d4af37;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        .deposit-loading span {
+            color: #c9af7b;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .edit-name-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 4000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .edit-name-modal.active {
+            display: flex;
+        }
+        
+        .edit-name-card {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 30px;
+            padding: 35px;
+            width: 380px;
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            text-align: center;
+        }
+        
+        .edit-name-card h3 {
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 25px;
+        }
+        
+        .edit-name-card input {
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 40px;
+            color: #faf4e0;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .edit-name-card input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .edit-name-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .edit-name-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .save-name-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            color: #1a0f08;
+        }
+        
+        .cancel-name-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #faf4e0;
+        }
+        
+        .main-wrapper {
+            display: flex;
+            gap: 25px;
+            padding-bottom: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 25px;
+        }
+        
+        .lobbies-section, .current-lobby-section {
+            background: rgba(10, 6, 4, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 22px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .lobby-chat-section {
+            width: 320px;
+            min-width: 320px;
+            background: rgba(10, 6, 4, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            height: 600px;
+            overflow: visible;
+        }
+        
+        .lobby-chat-section.active {
+            display: flex;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .section-header h2 {
+            color: #d4af37;
+            letter-spacing: 1px;
+            font-size: 22px;
+        }
+        
+        .lobby-limit-info {
+            background: rgba(212, 175, 55, 0.15);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #d4af37;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .lobby-limit-info span {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #searchLobbyInput {
+            padding: 10px 18px;
+            width: 200px;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 40px;
+            color: #faf4e0;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+        }
+        
+        #searchLobbyInput:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        .create-lobby-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0f08;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Oswald', sans-serif;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        
+        .create-lobby-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8c547 0%, #cc9a1a 100%);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        .create-lobby-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .lobbies-list {
+            max-height: 450px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .lobby-item {
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .lobby-item:hover {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.12);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+        }
+        
+        .lobby-info h3 {
+            color: #d4af37;
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+        
+        .lobby-info p {
+            color: #aa9977;
+            font-size: 12px;
+        }
+        
+        .join-lobby-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0f08;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .join-lobby-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8c547 0%, #cc9a1a 100%);
+            transform: scale(1.02);
+        }
+        
+        .join-lobby-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .current-lobby-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.4);
+        }
+        
+        .current-lobby-header h2 {
+            color: #d4af37;
+            font-size: 20px;
+        }
+        
+        .lobby-code {
+            background: rgba(212, 175, 55, 0.2);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-family: monospace;
+            color: #d4af37;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .players-list {
+            margin: 20px 0;
+        }
+        
+        .player-item {
+            background: rgba(212, 175, 55, 0.08);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-name {
+            color: #faf4e0;
+            font-size: 16px;
+        }
+        
+        .player-role {
+            color: #d4af37;
+            margin-left: 10px;
+            font-size: 12px;
+        }
+        
+        .ready-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .ready-status.ready {
+            background-color: #4caf50;
+            box-shadow: 0 0 5px #4caf50;
+        }
+        
+        .ready-status.not-ready {
+            background-color: #f44336;
+            box-shadow: 0 0 5px #f44336;
+        }
+        
+        .ready-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0f08;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .ready-btn.ready {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+        }
+        
+        .ready-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .kick-btn {
+            background: rgba(139, 0, 0, 0.3);
+            color: #ffaa88;
+            border: 1px solid #8b0000;
+            padding: 5px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .kick-btn:hover {
+            background: #8b0000;
+            color: white;
+        }
+        
+        .lobby-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .start-game-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0f08;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .start-game-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #e8c547 0%, #cc9a1a 100%);
+            box-shadow: 0 0 18px rgba(212, 175, 55, 0.5);
+        }
+        
+        .start-game-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .leave-lobby-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            color: #faf4e0;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .leave-lobby-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: #d4af37;
+        }
+        
+        .no-lobby {
+            text-align: center;
+            color: #aa9977;
+            padding: 50px 20px;
+        }
+        
+        .empty-lobbies {
+            text-align: center;
+            color: #aa9977;
+            padding: 40px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #1a0f08;
+            padding: 32px;
+            border-radius: 28px;
+            min-width: 380px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+        }
+        
+        .modal-content h3 {
+            color: #d4af37;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 40px;
+            color: #faf4e0;
+            font-size: 15px;
+        }
+        
+        .modal-content input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .modal-content label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 15px 0;
+            color: #faf4e0;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .confirm-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0f08;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .cancel-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: #faf4e0;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        
+        .chat-header-lobby {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #1a0f08, #0a0604);
+            border-bottom: 2px solid #d4af37;
+            border-radius: 22px 22px 0 0;
+        }
+        
+        .chat-header-lobby h2 {
+            color: #d4af37;
+            font-size: 18px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        .chat-header-lobby p {
+            color: #c9af7b;
+            font-size: 11px;
+        }
+        
+        .chat-messages-lobby {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .chat-message-lobby {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            animation: messageSlide 0.3s ease;
+        }
+        
+        .chat-message-lobby.own {
+            align-self: flex-end;
+        }
+        
+        .chat-message-lobby.other {
+            align-self: flex-start;
+        }
+        
+        .message-sender-lobby {
+            font-size: 10px;
+            color: #d4af37;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+        
+        .message-bubble-lobby {
+            background: rgba(30, 20, 12, 0.9);
+            padding: 8px 12px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            font-size: 13px;
+            color: #faf4e0;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .chat-message-lobby.own .message-bubble-lobby {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0f08;
+        }
+        
+        .message-sticker-lobby {
+            max-width: 100px;
+        }
+        
+        .message-sticker-lobby img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .chat-input-area-lobby {
+            padding: 10px 8px;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            gap: 6px;
+            position: relative;
+            overflow: visible;
+            align-items: center;
+        }
+        
+        .chat-input-lobby {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 30px;
+            color: #faf4e0;
+            font-size: 12px;
+            min-width: 0;
+        }
+        
+        .chat-input-lobby:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .chat-send-btn-lobby {
+            padding: 6px 10px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            border-radius: 30px;
+            color: #1a0f08;
+            font-weight: bold;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 14px;
+            line-height: 1;
+        }
+        
+        .sticker-btn-lobby {
+            padding: 6px 8px;
+            background: none;
+            border: 1px solid #d4af37;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        
+        .sticker-btn-lobby:hover {
+            background: rgba(212, 175, 55, 0.2);
+        }
+        
+        .sticker-panel-lobby {
+            display: none;
+            position: absolute;
+            bottom: 50px;
+            left: 5px;
+            right: 5px;
+            background: rgba(10, 6, 4, 0.98);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            padding: 8px;
+            border: 1px solid #d4af37;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            z-index: 100;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+        
+        .sticker-panel-lobby.active {
+            display: flex;
+        }
+        
+        .sticker-option-lobby {
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 8px;
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sticker-option-lobby:hover {
+            transform: scale(1.1);
+            background: rgba(212, 175, 55, 0.2);
+        }
+        
+        .sticker-option-lobby img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 5000;
+            font-family: 'Oswald', sans-serif;
+            font-weight: bold;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a0f08;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+        
+        /* ========== УЗОР ИЗ БОЛЬШИХ КАРТ ВНИЗУ СТРАНИЦЫ ========== */
+        .cards-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .cards-svg {
+            width: min(900px, 95vw);
+            height: auto;
+            filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
+            opacity: 0.85;
+            transition: all 0.3s ease;
+        }
+        
+        .cards-svg:hover {
+            opacity: 1;
+            filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.7));
+        }
+        
+        @media (max-width: 600px) {
+            .cards-footer {
+                margin-top: 20px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 1100px) {
+            .main-wrapper { flex-direction: column; }
+            .lobby-chat-section { width: 100%; height: 350px; }
+            .main-content { grid-template-columns: 1fr; }
+            .user-header { flex-wrap: wrap; gap: 10px; }
+        }
+        
+        @media (max-width: 600px) {
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box {
+                flex-wrap: wrap;
+            }
+            #searchLobbyInput {
+                width: 100%;
+            }
+            .toast-notification {
+                white-space: normal;
+                text-align: center;
+                font-size: 12px;
+                padding: 10px 16px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <h1>🎴 SULTAN</h1>
+            </div>
+            <div class="user-header">
+                <div class="compact-profile" onclick="openProfileModal()">
+                    <span class="compact-username" id="compactUsername">Загрузка...</span>
+                    <div class="compact-coins">
+                        <span>💰</span>
+                        <span id="compactCoins">0</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+        
+        <div class="main-wrapper">
+            <div class="main-content">
+                <div class="lobbies-section">
+                    <div class="section-header">
+                        <h2>🏠 Публичные лобби</h2>
+                        <div class="search-box">
+                            <input type="text" id="searchLobbyInput" placeholder="🔍 Поиск по названию...">
+                            <button class="create-lobby-btn" id="createLobbyBtn" onclick="showCreateLobbyModal()">+ Создать</button>
+                        </div>
+                    </div>
+                    <div class="lobby-limit-info">
+                        📋 Доступно лобби: <span id="lobbiesCount">0</span> / <span id="maxLobbies">5</span>
+                    </div>
+                    <div class="lobbies-list" id="lobbiesList">
+                        <div class="empty-lobbies">Загрузка лобби...</div>
+                    </div>
+                </div>
+                
+                <div class="current-lobby-section" id="currentLobbySection">
+                    <div class="current-lobby-header">
+                        <h2>🎮 Ваше лобби</h2>
+                        <div class="lobby-code" id="lobbyCode">—</div>
+                    </div>
+                    <div id="currentLobbyContent">
+                        <div class="no-lobby">
+                            Вы не в лобби<br>
+                            Создайте или присоединитесь к игре
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lobby-chat-section" id="lobbyChatSection">
+                <div class="chat-header-lobby">
+                    <h2>💬 ЧАТ ЛОББИ</h2>
+                    <p>Общайтесь с игроками</p>
+                </div>
+                <div class="chat-messages-lobby" id="chatMessagesLobby">
+                    <div class="chat-message-lobby other">
+                        <div class="message-sender-lobby">🤵 Система</div>
+                        <div class="message-bubble-lobby">Добро пожаловать в Sultan! Используйте стикеры и чат для общения 🎴</div>
+                    </div>
+                </div>
+                <div class="chat-input-area-lobby" style="position: relative;">
+                    <input type="text" class="chat-input-lobby" id="chatInputLobby" placeholder="Введите сообщение..." maxlength="100">
+                    <button class="sticker-btn-lobby" onclick="toggleLobbyStickerPanel()">😊</button>
+                    <button class="chat-send-btn-lobby" onclick="sendLobbyChatMessage()">➤</button>
+                    <div class="sticker-panel-lobby" id="stickerPanelLobby"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========== УЗОР ИЗ БОЛЬШИХ КАРТ ВНИЗУ СТРАНИЦЫ ========== -->
+    <div class="cards-footer">
+        <svg class="cards-svg" viewBox="0 0 850 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6"/>
+            <text x="32" y="72" fill="#d4af37" font-size="16" font-family="Georgia" font-weight="bold" opacity="0.8">A</text>
+            <text x="32" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8">♥</text>
+            <text x="65" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8">♥</text>
+            <text x="42" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">A</text>
+            <rect x="110" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-10,152,100)"/>
+            <text x="130" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-10,130,72)">K</text>
+            <text x="130" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-10,130,90)">♠</text>
+            <text x="165" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-10,165,130)">♠</text>
+            <text x="142" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-10,142,138)">K</text>
+            <rect x="210" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(5,252,100)"/>
+            <text x="232" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(5,232,72)">Q</text>
+            <text x="232" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(5,232,90)">♦</text>
+            <text x="265" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(5,265,130)">♦</text>
+            <text x="242" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(5,242,138)">Q</text>
+            <rect x="310" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7"/>
+            <text x="332" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">J</text>
+            <text x="332" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8">♣</text>
+            <text x="365" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8">♣</text>
+            <text x="342" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">J</text>
+            <rect x="410" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-5,452,100)"/>
+            <text x="430" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,430,72)">10</text>
+            <text x="430" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-5,430,90)">♥</text>
+            <text x="465" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-5,465,130)">♥</text>
+            <text x="442" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,442,138)">10</text>
+            <rect x="510" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(8,552,95)"/>
+            <text x="532" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,532,67)">K</text>
+            <text x="532" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(8,532,85)">♦</text>
+            <text x="565" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(8,565,125)">♦</text>
+            <text x="542" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,542,133)">K</text>
+            <rect x="610" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-3,652,100)"/>
+            <text x="630" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,72)">A</text>
+            <text x="630" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,90)">♠</text>
+            <text x="665" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-3,665,130)">♠</text>
+            <text x="642" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,642,138)">A</text>
+            <rect x="710" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(12,752,95)"/>
+            <text x="732" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,732,67)">Q</text>
+            <text x="732" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(12,732,85)">♣</text>
+            <text x="765" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(12,765,125)">♣</text>
+            <text x="742" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,742,133)">Q</text>
+            <circle cx="425" cy="250" r="18" stroke="#d4af37" stroke-width="1.2" fill="none" opacity="0.5"/>
+            <circle cx="425" cy="250" r="6" fill="#d4af37" opacity="0.6"/>
+            <path d="M400,250 L380,250 M450,250 L470,250 M425,225 L425,205 M425,275 L425,295" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.4"/>
+        </svg>
+    </div>
+    
+    <!-- Модальное окно профиля -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-card">
+            <div class="profile-header">
+                <button class="profile-close" onclick="closeProfileModal()">✕</button>
+                <button class="profile-edit-btn" onclick="openEditNameModal()">✏️ Сменить имя</button>
+                <h2 id="profileUsername">Игрок</h2>
+            </div>
+            <div class="profile-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value" id="profileWins">0</div>
+                        <div class="stat-label">Победы</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💔</div>
+                        <div class="stat-value" id="profileLosses">0</div>
+                        <div class="stat-label">Поражения</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎮</div>
+                        <div class="stat-value" id="profileGames">0</div>
+                        <div class="stat-label">Всего игр</div>
+                    </div>
+                </div>
+                <div class="coins-section">
+                    <div class="coins-info">
+                        <span class="icon">💰</span>
+                        <span class="label">Кран</span>
+                        <span class="amount" id="profileCoins">0</span>
+                    </div>
+                    <button class="add-coins-btn" onclick="openDepositModal()">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно пополнения -->
+    <div class="deposit-modal" id="depositModal">
+        <div class="deposit-card">
+            <div class="deposit-header">
+                <div class="test-badge">🧪 ТЕСТОВАЯ ФУНКЦИЯ</div>
+                <button class="deposit-close" onclick="closeDepositModal()">✕</button>
+                <h3>💰 ПОПОЛНЕНИЕ</h3>
+                <p>Пополните игровой баланс</p>
+            </div>
+            <div class="deposit-body">
+                <div class="rate-info">
+                    📊 Курс: <strong>1 крона = 1.2 рубля</strong>
+                </div>
+                
+                <div class="deposit-input-group">
+                    <label>💰 Сумма в кронах</label>
+                    <div class="currency-input">
+                        <span class="currency-symbol">🎴</span>
+                        <input type="number" id="depositCoinsAmount" placeholder="Введите сумму" value="1000" min="1" step="100">
+                    </div>
+                </div>
+                
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="setDepositPreset(500)">500 крон</button>
+                    <button class="preset-btn" onclick="setDepositPreset(1000)">1000 крон</button>
+                    <button class="preset-btn" onclick="setDepositPreset(5000)">5000 крон</button>
+                    <button class="preset-btn" onclick="setDepositPreset(10000)">10000 крон</button>
+                </div>
+                
+                <div class="conversion-result">
+                    <div class="label">💸 К ОПЛАТЕ (РУБЛИ)</div>
+                    <div class="value" id="depositRubAmount">0 ₽</div>
+                </div>
+                
+                <button class="deposit-pay-btn" id="depositPayBtn" onclick="processDeposit()">
+                    💳 ОПЛАТИТЬ
+                </button>
+                
+                <div class="deposit-loading" id="depositLoading">
+                    <div class="spinner"></div>
+                    <span>Обработка платежа...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно смены имени -->
+    <div class="edit-name-modal" id="editNameModal">
+        <div class="edit-name-card">
+            <h3>Сменить имя</h3>
+            <input type="text" id="newUsernameInput" placeholder="Новый никнейм (3-12 символов)" maxlength="12">
+            <div class="edit-name-buttons">
+                <button class="save-name-btn" onclick="changeUsername()">Сохранить</button>
+                <button class="cancel-name-btn" onclick="closeEditNameModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="createLobbyModal">
+        <div class="modal-content">
+            <h3>Создание лобби</h3>
+            <input type="text" id="lobbyName" placeholder="Название лобби" maxlength="30">
+            <label>
+                <input type="checkbox" id="isPrivateCheckbox"> Приватное лобби
+            </label>
+            <label style="margin-top: 10px; display: block;">👥 Режим игры:
+                <select id="lobbyMaxPlayers" style="margin-left: 10px; background: rgba(30,20,12,0.9); border: 1px solid #d4af37; color: #faf4e0; padding: 5px 10px; border-radius: 20px;">
+                    <option value="2">2 игрока (6 карт, до 5 побед)</option>
+                    <option value="3" selected>3 игрока (12 карт, до 3 побед)</option>
+                </select>
+            </label>
+            <input type="password" id="lobbyPassword" placeholder="Пароль (для приватного)" style="display: none;">
+            <div class="modal-buttons">
+                <button class="confirm-btn" onclick="createLobby()">Создать</button>
+                <button class="cancel-btn" onclick="closeCreateLobbyModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="joinPrivateModal">
+        <div class="modal-content">
+            <h3>Вход в приватное лобби</h3>
+            <input type="password" id="privateLobbyPassword" placeholder="Введите пароль">
+            <div class="modal-buttons">
+                <button class="confirm-btn" onclick="joinPrivateLobby()">Войти</button>
+                <button class="cancel-btn" onclick="closeJoinPrivateModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = null;
+        let currentUser = null;
+        let currentLobby = null;
+        let pendingLobbyId = null;
+        let allLobbies = [];
+        let refreshInterval = null;
+        let userStats = { wins: 0, losses: 0, gamesPlayed: 0, coins: 0 };
+        let currentReadyStatus = {};
+        const MAX_LOBBIES = 5;
+        const EXCHANGE_RATE = 1.2;
+        
+        // ========== ФУНКЦИИ ПРОФИЛЯ ==========
+        function openProfileModal() {
+            updateProfileModalDisplay();
+            document.getElementById('profileModal').classList.add('active');
+        }
+        
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        
+        function updateProfileModalDisplay() {
+            document.getElementById('profileUsername').textContent = currentUser;
+            document.getElementById('profileWins').textContent = userStats.wins;
+            document.getElementById('profileLosses').textContent = userStats.losses;
+            document.getElementById('profileGames').textContent = userStats.gamesPlayed;
+            document.getElementById('profileCoins').textContent = userStats.coins.toLocaleString();
+        }
+        
+        function updateCompactDisplay() {
+            document.getElementById('compactUsername').textContent = currentUser;
+            document.getElementById('compactCoins').textContent = userStats.coins.toLocaleString();
+        }
+        
+        function updateLobbiesCount(count) {
+            const countSpan = document.getElementById('lobbiesCount');
+            if (countSpan) {
+                countSpan.textContent = count;
+                countSpan.style.color = count >= MAX_LOBBIES ? '#ffaa44' : '#d4af37';
+            }
+            
+            const createBtn = document.getElementById('createLobbyBtn');
+            if (createBtn) {
+                if (count >= MAX_LOBBIES) {
+                    createBtn.disabled = true;
+                    createBtn.title = `Достигнуто максимальное количество лобби (${MAX_LOBBIES})`;
+                    createBtn.style.opacity = '0.5';
+                    createBtn.style.cursor = 'not-allowed';
+                } else {
+                    createBtn.disabled = false;
+                    createBtn.title = 'Создать новое лобби';
+                    createBtn.style.opacity = '1';
+                    createBtn.style.cursor = 'pointer';
+                }
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // ========== ФУНКЦИИ ПОПОЛНЕНИЯ ==========
+        function openDepositModal() {
+            closeProfileModal();
+            const payBtn = document.getElementById('depositPayBtn');
+            const loadingDiv = document.getElementById('depositLoading');
+            const coinsInput = document.getElementById('depositCoinsAmount');
+            
+            if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.innerHTML = '💳 ОПЛАТИТЬ';
+                payBtn.style.opacity = '1';
+            }
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (coinsInput) coinsInput.value = 1000;
+            
+            updateDepositConversion();
+            document.getElementById('depositModal').classList.add('active');
+        }
+        
+        function closeDepositModal() {
+            const depositModal = document.getElementById('depositModal');
+            const payBtn = document.getElementById('depositPayBtn');
+            const loadingDiv = document.getElementById('depositLoading');
+            
+            if (payBtn) {
+                payBtn.disabled = false;
+                payBtn.innerHTML = '💳 ОПЛАТИТЬ';
+                payBtn.style.opacity = '1';
+            }
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            
+            if (depositModal) {
+                depositModal.classList.remove('active');
+            }
+        }
+        
+        function calculateRubles(coins) {
+            return (coins * EXCHANGE_RATE).toFixed(2);
+        }
+        
+        function updateDepositConversion() {
+            const coinsInput = document.getElementById('depositCoinsAmount');
+            let coins = parseInt(coinsInput.value);
+            if (isNaN(coins) || coins < 1) {
+                coins = 1;
+                coinsInput.value = 1;
+            }
+            const rubles = calculateRubles(coins);
+            document.getElementById('depositRubAmount').textContent = `${rubles} ₽`;
+        }
+        
+        function setDepositPreset(amount) {
+            document.getElementById('depositCoinsAmount').value = amount;
+            updateDepositConversion();
+        }
+        
+        async function processDeposit() {
+            const coinsInput = document.getElementById('depositCoinsAmount');
+            let coinsAmount = parseInt(coinsInput.value);
+            
+            if (isNaN(coinsAmount) || coinsAmount < 1) {
+                alert('Введите корректную сумму (минимум 1 крона)');
+                return;
+            }
+            
+            const rubAmount = calculateRubles(coinsAmount);
+            
+            const testMessage = `🧪 ТЕСТОВАЯ ФУНКЦИЯ\n\nСумма: ${coinsAmount.toLocaleString()} крон\nК оплате: ${rubAmount} ₽\n\nЭто тестовый режим. Деньги не будут списаны.\nБаланс будет пополнен автоматически.`;
+            
+            const confirmed = confirm(testMessage + '\n\nПродолжить?');
+            if (!confirmed) return;
+            
+            const payBtn = document.getElementById('depositPayBtn');
+            const loadingDiv = document.getElementById('depositLoading');
+            const originalBtnText = payBtn.innerHTML;
+            
+            payBtn.disabled = true;
+            payBtn.style.opacity = '0.5';
+            payBtn.innerHTML = '⏳ ОБРАБОТКА...';
+            if (loadingDiv) loadingDiv.style.display = 'block';
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                
+                const response = await fetch('/api/auth/add-coins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, amount: coinsAmount }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    userStats.coins = data.coins;
+                    updateProfileModalDisplay();
+                    updateCompactDisplay();
+                    
+                    closeDepositModal();
+                    showToast(`✅ Пополнено! +${coinsAmount.toLocaleString()} крон (${rubAmount} ₽)`);
+                    
+                    setTimeout(() => {
+                        openProfileModal();
+                    }, 500);
+                } else {
+                    alert(data.error || 'Ошибка при пополнении');
+                    payBtn.disabled = false;
+                    payBtn.style.opacity = '1';
+                    payBtn.innerHTML = originalBtnText;
+                    if (loadingDiv) loadingDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Ошибка при пополнении:', error);
+                
+                if (error.name === 'AbortError') {
+                    alert('❌ Превышено время ожидания (15 сек). Пожалуйста, проверьте соединение и попробуйте снова.');
+                } else if (error.message === 'Failed to fetch') {
+                    alert('❌ Ошибка соединения с сервером. Убедитесь, что сервер запущен.');
+                } else {
+                    alert('❌ Ошибка: ' + (error.message || 'Неизвестная ошибка'));
+                }
+                
+                payBtn.disabled = false;
+                payBtn.style.opacity = '1';
+                payBtn.innerHTML = originalBtnText;
+                if (loadingDiv) loadingDiv.style.display = 'none';
+            }
+        }
+        
+        // ========== ФУНКЦИИ СМЕНЫ ИМЕНИ ==========
+        function openEditNameModal() {
+            closeProfileModal();
+            document.getElementById('editNameModal').classList.add('active');
+            document.getElementById('newUsernameInput').value = '';
+        }
+        
+        function closeEditNameModal() {
+            document.getElementById('editNameModal').classList.remove('active');
+        }
+        
+        async function changeUsername() {
+            const newUsername = document.getElementById('newUsernameInput').value.trim();
+            if (!newUsername) {
+                alert('Введите новый никнейм');
+                return;
+            }
+            if (newUsername.length < 3 || newUsername.length > 12) {
+                alert('Никнейм должен быть от 3 до 12 символов');
+                return;
+            }
+            if (newUsername === currentUser) {
+                alert('Это ваше текущее имя');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/change-username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ oldUsername: currentUser, newUsername: newUsername })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.username;
+                    userStats = data.stats;
+                    updateProfileModalDisplay();
+                    updateCompactDisplay();
+                    sessionStorage.setItem('playerName', currentUser);
+                    closeEditNameModal();
+                    
+                    if (socket && currentLobby) {
+                        socket.emit('leaveLobby', {});
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                } else {
+                    alert(data.error || 'Ошибка смены имени');
+                }
+            } catch (error) {
+                console.error('Ошибка смены имени:', error);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+        
+        document.getElementById('profileModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('profileModal')) {
+                closeProfileModal();
+            }
+        });
+        
+        document.getElementById('depositModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('depositModal')) {
+                closeDepositModal();
+            }
+        });
+        
+        document.getElementById('editNameModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('editNameModal')) {
+                closeEditNameModal();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const depositModal = document.getElementById('depositModal');
+                if (depositModal && depositModal.classList.contains('active')) {
+                    closeDepositModal();
+                }
+                const profileModal = document.getElementById('profileModal');
+                if (profileModal && profileModal.classList.contains('active')) {
+                    closeProfileModal();
+                }
+                const editModal = document.getElementById('editNameModal');
+                if (editModal && editModal.classList.contains('active')) {
+                    closeEditNameModal();
+                }
+            }
+        });
+        
+        // ========== ФУНКЦИИ ЛОББИ И ЧАТА ==========
+        function toggleLobbyStickerPanel() {
+            const panel = document.getElementById('stickerPanelLobby');
+            if (panel) panel.classList.toggle('active');
+        }
+        
+        function loadLobbyStickers() {
+            const panel = document.getElementById('stickerPanelLobby');
+            if (!panel) return;
+            panel.innerHTML = '';
+            for (let i = 1; i <= 8; i++) {
+                const stickerDiv = document.createElement('div');
+                stickerDiv.className = 'sticker-option-lobby';
+                stickerDiv.onclick = () => sendLobbySticker(i);
+                const img = document.createElement('img');
+                img.src = `/stickers/sticker (${i}).png`;
+                img.alt = `Стикер ${i}`;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                    stickerDiv.textContent = emojis[i-1];
+                    stickerDiv.style.fontSize = '24px';
+                    stickerDiv.style.display = 'flex';
+                    stickerDiv.style.alignItems = 'center';
+                    stickerDiv.style.justifyContent = 'center';
+                };
+                stickerDiv.appendChild(img);
+                panel.appendChild(stickerDiv);
+            }
+        }
+        
+        function sendLobbySticker(stickerId) {
+            if (socket && currentUser && currentLobby) {
+                socket.emit('lobbyChatSticker', {
+                    username: currentUser,
+                    stickerId: stickerId,
+                    lobbyId: currentLobby.lobbyId
+                });
+                toggleLobbyStickerPanel();
+            }
+        }
+        
+        function sendLobbyChatMessage() {
+            const input = document.getElementById('chatInputLobby');
+            const message = input.value.trim();
+            if (message && socket && currentUser && currentLobby) {
+                socket.emit('lobbyChatMessage', {
+                    username: currentUser,
+                    message: message,
+                    lobbyId: currentLobby.lobbyId
+                });
+                input.value = '';
+            }
+        }
+        
+        function addLobbyMessage(username, message, isSticker = false, stickerId = null) {
+            const messagesDiv = document.getElementById('chatMessagesLobby');
+            if (!messagesDiv) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message-lobby ${username === currentUser ? 'own' : 'other'}`;
+            
+            const senderSpan = document.createElement('div');
+            senderSpan.className = 'message-sender-lobby';
+            senderSpan.textContent = username === currentUser ? 'Вы' : username;
+            
+            const bubbleDiv = document.createElement('div');
+            
+            if (isSticker && stickerId) {
+                bubbleDiv.className = 'message-sticker-lobby';
+                const img = document.createElement('img');
+                img.src = `/stickers/sticker (${stickerId}).png`;
+                img.alt = `Стикер ${stickerId}`;
+                img.style.width = '100%';
+                img.style.height = 'auto';
+                img.style.borderRadius = '10px';
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                    bubbleDiv.textContent = emojis[stickerId - 1];
+                    bubbleDiv.style.fontSize = '32px';
+                    bubbleDiv.style.textAlign = 'center';
+                    bubbleDiv.style.padding = '8px';
+                };
+                bubbleDiv.appendChild(img);
+            } else {
+                bubbleDiv.className = 'message-bubble-lobby';
+                bubbleDiv.textContent = message;
+            }
+            
+            messageDiv.appendChild(senderSpan);
+            messageDiv.appendChild(bubbleDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function showLobbyChat(show) {
+            const chatSection = document.getElementById('lobbyChatSection');
+            if (chatSection) {
+                if (show) chatSection.classList.add('active');
+                else chatSection.classList.remove('active');
+            }
+        }
+        
+        function toggleReady() {
+            if (!socket || !currentLobby) return;
+            socket.emit('toggleReady', { lobbyId: currentLobby.lobbyId, username: currentUser }, (res) => {
+                if (res && !res.success) {
+                    alert(res.error);
+                }
+            });
+        }
+        
+        function renderCurrentLobby(lobby) {
+            const container = document.getElementById('currentLobbyContent');
+            if (!lobby || !lobby.players || lobby.players.length === 0) {
+                container.innerHTML = `<div class="no-lobby">✨ Вы не в лобби ✨<br>Создайте или присоединитесь к игре</div>`;
+                document.getElementById('lobbyCode').textContent = '—';
+                return;
+            }
+            document.getElementById('lobbyCode').textContent = lobby.lobbyId;
+            const isCreator = lobby.creator === currentUser;
+            const readyMap = lobby.readyStatus || {};
+            
+            let allOthersReady = true;
+            let notReadyCount = 0;
+            for (const player of lobby.players) {
+                if (player.username !== lobby.creator) {
+                    const isReady = readyMap[player.username] || false;
+                    if (!isReady) {
+                        allOthersReady = false;
+                        notReadyCount++;
+                    }
+                }
+            }
+            const canStart = lobby.playersCount === lobby.maxPlayers && isCreator && allOthersReady;
+            
+            container.innerHTML = `
+                <div class="players-list" id="playersList">
+                    ${lobby.players.map(player => {
+                        const isPlayerReady = readyMap[player.username] || false;
+                        return `
+                            <div class="player-item" data-username="${player.username}">
+                                <div class="player-info">
+                                    <span class="player-name">${escapeHtml(player.username)}</span>
+                                    ${player.username === lobby.creator ? '<span class="player-role">👑 Создатель</span>' : 
+                                        `<span class="ready-status ${isPlayerReady ? 'ready' : 'not-ready'}"></span>
+                                         <span style="font-size: 12px; color: ${isPlayerReady ? '#4caf50' : '#f44336'};">${isPlayerReady ? 'Готов' : 'Не готов'}</span>`
+                                    }
+                                </div>
+                                ${isCreator && player.username !== currentUser ? 
+                                    `<button class="kick-btn" onclick="kickPlayer('${escapeHtml(player.username)}')">X</button>` : 
+                                    (player.username !== lobby.creator && player.username === currentUser ?
+                                        `<button class="ready-btn ${isPlayerReady ? 'ready' : ''}" onclick="toggleReady()">${isPlayerReady ? '✓ ГОТОВ' : '⚡ ГОТОВ?'}</button>` : '')
+                                }
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="lobby-actions">
+                    ${isCreator ? 
+                        `<button class="start-game-btn" onclick="startGame()" ${!canStart ? 'disabled' : ''}>
+                            ${!canStart && lobby.playersCount === lobby.maxPlayers && notReadyCount > 0 ? 
+                                `⏳ Ожидание готовности (${notReadyCount})` : 
+                                (lobby.playersCount === lobby.maxPlayers ? '▶ НАЧАТЬ ИГРУ' : `⏳ Нужно ${lobby.maxPlayers} игроков`)}
+                        </button>` : 
+                        ''
+                    }
+                    <button class="leave-lobby-btn" onclick="leaveLobby()">🚪 Выйти</button>
+                </div>
+            `;
+        }
+        
+        function renderLobbiesList(lobbies) {
+            const searchTerm = document.getElementById('searchLobbyInput')?.value.toLowerCase() || '';
+            let filteredLobbies = lobbies;
+            if (searchTerm) { filteredLobbies = lobbies.filter(l => l.name.toLowerCase().includes(searchTerm)); }
+            
+            updateLobbiesCount(filteredLobbies.length);
+            
+            const container = document.getElementById('lobbiesList');
+            if (!filteredLobbies || filteredLobbies.length === 0) {
+                container.innerHTML = '<div class="empty-lobbies">✨ Нет доступных лобби ✨</div>';
+                return;
+            }
+            container.innerHTML = filteredLobbies.map(lobby => `
+                <div class="lobby-item">
+                    <div class="lobby-info">
+                        <h3>${escapeHtml(lobby.name)}</h3>
+                        <p>👑 ${escapeHtml(lobby.creator)} | 👥 ${lobby.playersCount}/${lobby.maxPlayers}${lobby.hasPassword ? ' | 🔒' : ''}</p>
+                    </div>
+                    ${!currentLobby ? 
+                        `<button class="join-lobby-btn" onclick="joinLobby('${lobby.lobbyId}')">Войти</button>` : 
+                        `<button class="join-lobby-btn" disabled style="opacity:0.5;">В игре</button>`
+                    }
+                </div>
+            `).join('');
+        }
+        
+        function refreshLobbies() { if (socket && socket.connected) socket.emit('getLobbies'); }
+        
+        function showCreateLobbyModal() {
+            const currentLobbiesCount = allLobbies.length;
+            if (currentLobbiesCount >= MAX_LOBBIES) {
+                alert(`Достигнуто максимальное количество лобби (${MAX_LOBBIES}). Дождитесь, пока освободится место.`);
+                return;
+            }
+            document.getElementById('createLobbyModal').classList.add('active');
+        }
+        
+        function closeCreateLobbyModal() { document.getElementById('createLobbyModal').classList.remove('active'); }
+        function closeJoinPrivateModal() { document.getElementById('joinPrivateModal').classList.remove('active'); }
+        
+        function joinLobby(id) {
+            pendingLobbyId = id;
+            socket.emit('joinLobby', { lobbyId: id, username: currentUser }, (res) => {
+                if (res.success) { 
+                    currentLobby = res.lobby; 
+                    renderCurrentLobby(currentLobby);
+                    showLobbyChat(true);
+                } else if (res.error === 'Неверный пароль') { 
+                    document.getElementById('joinPrivateModal').classList.add('active'); 
+                } else alert(res.error);
+            });
+        }
+        
+        function joinPrivateLobby() {
+            const password = document.getElementById('privateLobbyPassword').value;
+            socket.emit('joinLobby', { lobbyId: pendingLobbyId, username: currentUser, password }, (res) => {
+                if (res.success) { 
+                    currentLobby = res.lobby; 
+                    renderCurrentLobby(currentLobby);
+                    showLobbyChat(true);
+                    closeJoinPrivateModal(); 
+                } else { alert(res.error); }
+            });
+        }
+        
+        function createLobby() {
+            const lobbyName = document.getElementById('lobbyName').value.trim();
+            if (!lobbyName) { alert('Введите название лобби'); return; }
+            const isPrivate = document.getElementById('isPrivateCheckbox').checked;
+            const password = document.getElementById('lobbyPassword').value;
+            const maxPlayers = parseInt(document.getElementById('lobbyMaxPlayers').value);
+            socket.emit('createLobby', { username: currentUser, isPrivate, password, lobbyName, maxPlayers }, (res) => {
+                if (res.success) { 
+                    currentLobby = res.lobby; 
+                    renderCurrentLobby(currentLobby); 
+                    closeCreateLobbyModal();
+                    showLobbyChat(true);
+                } else { alert(res.error); }
+            });
+        }
+        
+        function kickPlayer(usernameToKick) {
+            if (confirm(`Выгнать ${usernameToKick} из лобби?`)) {
+                socket.emit('kickPlayer', { lobbyId: currentLobby.lobbyId, usernameToKick });
+            }
+        }
+        
+        function leaveLobby() { 
+            if (confirm('Выйти из лобби?')) {
+                socket.emit('leaveLobby', {}, () => { 
+                    currentLobby = null; 
+                    renderCurrentLobby(null);
+                    showLobbyChat(false);
+                });
+            }
+        }
+        
+        function startGame() {
+            if (!socket || !currentLobby) return;
+            if (currentLobby.creator !== currentUser) {
+                alert('Только создатель может начать игру');
+                return;
+            }
+            if (currentLobby.playersCount !== currentLobby.maxPlayers) {
+                alert(`Нужно ${currentLobby.maxPlayers} игроков для старта`);
+                return;
+            }
+            sessionStorage.setItem('currentLobbyId', currentLobby.lobbyId);
+            socket.emit('startGame', {}, (response) => {
+                if (response && response.success) {
+                    console.log('Игра запущена, ожидаем перехода...');
+                } else if (response && response.error) {
+                    alert('Ошибка запуска: ' + response.error);
+                }
+            });
+        }
+        
+        async function logout() { 
+            await fetch('/api/auth/logout', { method: 'POST' }); 
+            sessionStorage.clear();
+            window.location.href = '/'; 
+        }
+        
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        async function init() {
+            await loadUserData();
+            connectSocket();
+            refreshInterval = setInterval(refreshLobbies, 5000);
+            window.addEventListener('beforeunload', () => {
+                if (refreshInterval) clearInterval(refreshInterval);
+                if (socket && currentLobby) {
+                    socket.emit('leaveLobby', {});
+                }
+            });
+            const searchInput = document.getElementById('searchLobbyInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    renderLobbiesList(allLobbies);
+                });
+            }
+            
+            const chatInput = document.getElementById('chatInputLobby');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendLobbyChatMessage();
+                });
+            }
+            
+            const depositCoinsInput = document.getElementById('depositCoinsAmount');
+            if (depositCoinsInput) {
+                depositCoinsInput.addEventListener('input', updateDepositConversion);
+            }
+            
+            loadLobbyStickers();
+            showLobbyChat(false);
+        }
+        
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/auth/check');
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/';
+                    return;
+                }
+                currentUser = data.username;
+                userStats = data.stats || { wins: 0, losses: 0, gamesPlayed: 0, coins: 0 };
+                updateCompactDisplay();
+                updateProfileModalDisplay();
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                window.location.href = '/';
+            }
+        }
+        
+        function connectSocket() {
+            socket = io();
+            socket.on('connect', () => { 
+                console.log('✅ Подключен к серверу');
+                if (currentUser && currentLobby) {
+                    socket.emit('reconnectToLobby', {
+                        username: currentUser,
+                        lobbyId: currentLobby.lobbyId
+                    });
+                }
+            });
+            
+            socket.on('coinsUpdated', (data) => {
+                if (data.coins !== undefined) {
+                    userStats.coins = data.coins;
+                    updateProfileModalDisplay();
+                    updateCompactDisplay();
+                }
+            });
+            
+            socket.on('lobbiesList', (lobbies) => {
+                allLobbies = lobbies || [];
+                renderLobbiesList(allLobbies);
+            });
+            socket.on('lobbyLeft', () => {
+                currentLobby = null;
+                renderCurrentLobby(null);
+                showLobbyChat(false);
+                refreshLobbies();
+            });
+            socket.on('lobbyUpdate', (lobby) => {
+                if (currentUser && lobby.players) {
+                    const isStillInLobby = lobby.players.some(p => p.username === currentUser);
+                    if (!isStillInLobby && currentLobby) {
+                        currentLobby = null;
+                        renderCurrentLobby(null);
+                        showLobbyChat(false);
+                        refreshLobbies();
+                        return;
+                    }
+                }
+                currentLobby = lobby;
+                renderCurrentLobby(lobby);
+                if (lobby && lobby.players.some(p => p.username === currentUser)) {
+                    showLobbyChat(true);
+                }
+            });
+            
+            socket.on('readyStatusUpdate', (data) => {
+                if (currentLobby) {
+                    if (currentLobby.players) {
+                        for (const player of currentLobby.players) {
+                            player.ready = data.readyStatus[player.username] || false;
+                        }
+                    }
+                    renderCurrentLobby(currentLobby);
+                }
+            });
+            
+            socket.on('gameStarted', (data) => {
+                sessionStorage.setItem('playerName', currentUser);
+                sessionStorage.setItem('currentLobbyId', data.lobbyId);
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                    refreshInterval = null;
+                }
+                if (socket) {
+                    socket.off('lobbiesList');
+                    socket.off('lobbyUpdate');
+                    socket.off('lobbyLeft');
+                }
+                window.location.href = `/game.html?lobbyId=${data.lobbyId}`;
+            });
+            socket.on('kickedFromLobby', (data) => {
+                alert(data.message);
+                currentLobby = null;
+                renderCurrentLobby(null);
+                showLobbyChat(false);
+                refreshLobbies();
+            });
+            socket.on('redirectToLobbyList', () => {
+                currentLobby = null;
+                renderCurrentLobby(null);
+                showLobbyChat(false);
+                refreshLobbies();
+            });
+            socket.on('error', (error) => { alert(error); });
+            socket.on('lobbyChatMessage', (data) => {
+                addLobbyMessage(data.username, data.message, false, null);
+            });
+            socket.on('lobbyChatSticker', (data) => {
+                addLobbyMessage(data.username, '', true, data.stickerId);
+            });
+            socket.on('lobbyChatHistory', (history) => {
+                const messagesDiv = document.getElementById('chatMessagesLobby');
+                if (!messagesDiv) return;
+                messagesDiv.innerHTML = '';
+                
+                const systemMsg = document.createElement('div');
+                systemMsg.className = 'chat-message-lobby other';
+                systemMsg.innerHTML = `
+                    <div class="message-sender-lobby">🤵 Система</div>
+                    <div class="message-bubble-lobby">Добро пожаловать в Sultan! Используйте стикеры и чат для общения 🎴</div>
+                `;
+                messagesDiv.appendChild(systemMsg);
+                
+                for (const msg of history) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-message-lobby ${msg.username === currentUser ? 'own' : 'other'}`;
+                    
+                    const senderSpan = document.createElement('div');
+                    senderSpan.className = 'message-sender-lobby';
+                    senderSpan.textContent = msg.username === currentUser ? 'Вы' : msg.username;
+                    
+                    const bubbleDiv = document.createElement('div');
+                    
+                    if (msg.stickerId) {
+                        bubbleDiv.className = 'message-sticker-lobby';
+                        const img = document.createElement('img');
+                        img.src = `/stickers/sticker (${msg.stickerId}).png`;
+                        img.alt = `Стикер ${msg.stickerId}`;
+                        img.style.width = '100%';
+                        img.style.height = 'auto';
+                        img.style.borderRadius = '10px';
+                        img.onerror = () => {
+                            img.style.display = 'none';
+                            const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
+                            bubbleDiv.textContent = emojis[msg.stickerId - 1];
+                            bubbleDiv.style.fontSize = '32px';
+                            bubbleDiv.style.textAlign = 'center';
+                            bubbleDiv.style.padding = '8px';
+                        };
+                        bubbleDiv.appendChild(img);
+                    } else {
+                        bubbleDiv.className = 'message-bubble-lobby';
+                        bubbleDiv.textContent = msg.message;
+                    }
+                    
+                    messageDiv.appendChild(senderSpan);
+                    messageDiv.appendChild(bubbleDiv);
+                    messagesDiv.appendChild(messageDiv);
+                }
+                
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+            refreshLobbies();
+        }
+        
+        document.getElementById('isPrivateCheckbox').addEventListener('change', (e) => {
+            document.getElementById('lobbyPassword').style.display = e.target.checked ? 'block' : 'none';
+        });
+        
+        init();
+    </script>
+</body>
+</html>

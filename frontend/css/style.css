@@ -1,0 +1,1194 @@
+:root {
+    --gold: #d4af37;
+    --gold-light: #ffe68f;
+    --gold-dark: #b8860b;
+    --gold-glow: 0 0 20px rgba(212, 175, 55, 0.8);
+    --emerald: #1a5c3a;
+    --emerald-light: #2a7a4a;
+    --emerald-dark: #0e3a22;
+    --ruby: #8b1a1a;
+    --cream: #fff8e7;
+    --eastern-gold: #e6b422;
+    --eastern-gold-dark: #b8860b;
+}
+
+* {
+    user-select: none;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    background: radial-gradient(ellipse at 50% 45%, #3a8a5a 0%, #1a5c3a 35%, #0e3a22 65%, #051a0e 100%);
+    font-family: 'Oswald', 'Playfair Display', sans-serif;
+    color: #fff8e7;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Восточный орнамент на заднем фоне */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" opacity="0.25"><path fill="none" stroke="%23e6b422" stroke-width="1.5" d="M100,10 L120,40 L160,45 L130,70 L140,110 L100,95 L60,110 L70,70 L40,45 L80,40 Z"/><path fill="none" stroke="%23e6b422" stroke-width="1" d="M50,50 L70,55 L75,75 L55,70 L40,85 L45,65 L30,55 L50,50Z M150,50 L130,55 L125,75 L145,70 L160,85 L155,65 L170,55 L150,50Z M50,150 L70,145 L75,125 L55,130 L40,115 L45,135 L30,145 L50,150Z M150,150 L130,145 L125,125 L145,130 L160,115 L155,135 L170,145 L150,150Z"/><circle cx="100" cy="100" r="18" stroke="%23e6b422" stroke-width="1.8" fill="none"/><circle cx="100" cy="100" r="8" fill="%23e6b422" opacity="0.5"/><path fill="none" stroke="%23e6b422" stroke-width="1.2" d="M100,30 L100,50 M100,150 L100,170 M30,100 L50,100 M150,100 L170,100"/><path fill="none" stroke="%23e6b422" stroke-width="1" d="M55,55 L70,70 M130,55 L145,70 M55,145 L70,130 M130,145 L145,130"/></svg>');
+    background-repeat: repeat;
+    background-size: 100px 100px;
+    pointer-events: none;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle at 20% 40%, rgba(230, 180, 34, 0.08) 2px, transparent 2px);
+    background-size: 40px 40px;
+    pointer-events: none;
+}
+
+.minimal-exit {
+    position: fixed;
+    top: min(12px, 2vh);
+    right: min(15px, 2vw);
+    z-index: 2000;
+    background: rgba(26, 71, 49, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--eastern-gold);
+    color: var(--eastern-gold);
+    width: clamp(28px, 4vw, 36px);
+    height: clamp(28px, 4vw, 36px);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 300;
+    transition: all 0.3s ease;
+    font-family: serif;
+    box-shadow: 0 0 8px rgba(230, 180, 34, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.minimal-exit:hover {
+    background: var(--ruby);
+    border-color: var(--gold-light);
+    color: #fff;
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(230, 180, 34, 0.6);
+}
+
+#gameContainer {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    background: transparent;
+}
+
+.game-board {
+    position: relative;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    padding: clamp(10px, 2vh, 20px) clamp(15px, 3vw, 25px) 0 clamp(15px, 3vw, 25px);
+    gap: clamp(8px, 1.5vw, 15px);
+    min-height: 0;
+}
+
+.player-badge {
+    background: linear-gradient(145deg, rgba(26, 71, 49, 0.95) 0%, rgba(14, 42, 26, 0.98) 100%);
+    backdrop-filter: blur(12px);
+    border-radius: min(60px, 8vw);
+    border: 2px solid var(--eastern-gold);
+    padding: clamp(6px, 1.5vh, 10px) clamp(15px, 3vw, 25px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(230, 180, 34, 0.4);
+    transition: all 0.2s;
+    position: relative;
+}
+
+.player-badge:hover {
+    border-color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(230, 180, 34, 0.5), 0 0 0 2px #e6b422;
+}
+
+.player-top {
+    grid-column: 2;
+    justify-self: center;
+    align-self: center;
+}
+
+.player-right {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: center;
+    align-self: center;
+    transform: rotate(90deg);
+}
+
+.badge-info {
+    text-align: center;
+}
+
+.player-name {
+    font-family: 'Oswald', 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: clamp(12px, 2vw, 18px);
+    letter-spacing: 1.5px;
+    color: var(--gold-light);
+    text-shadow: 0 0 8px rgba(230, 180, 34, 0.5);
+}
+
+.player-winner {
+    color: var(--eastern-gold);
+    text-shadow: 0 0 10px #e6b422;
+    font-weight: bold;
+}
+
+.player-cards {
+    font-size: clamp(10px, 1.5vw, 12px);
+    font-weight: 500;
+    color: #d4c4a8;
+    margin-top: 4px;
+}
+
+.role-badge {
+    font-size: clamp(8px, 1.2vw, 10px);
+    font-weight: 700;
+    padding: 4px min(14px, 2vw);
+    border-radius: 30px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(0, 0, 0, 0.5);
+    display: inline-block;
+}
+
+.role-badge.attacker {
+    color: #ffaa44;
+    border: 1px solid #ffaa44;
+    background: rgba(255, 80, 40, 0.2);
+}
+
+.role-badge.defender {
+    color: #7fff7f;
+    border: 1px solid #7fff7f;
+    background: rgba(60, 130, 60, 0.3);
+}
+
+/* ========== ОСНОВНОЙ СТОЛ ========== */
+.main-table {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 35% 35%, #2a7a4a, #0e3a22);
+    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), inset 0 2px 8px rgba(230, 180, 34, 0.3), 0 0 0 min(5px, 0.8vw) #e6b422, 0 0 0 min(11px, 1.5vw) #8b6914, 0 0 0 min(15px, 2.2vw) #3d2b1a;
+    margin: clamp(8px, 2%, 15px);
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Убираем узоры со стола */
+.main-table::before {
+    display: none;
+}
+
+/* ЗОЛОТЫЕ ПУНКТИРНЫЕ ЛИНИИ ПО КРАЮ СТОЛА */
+.main-table::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border-radius: 50%;
+    border: 1.5px dashed #e6b422;
+    pointer-events: none;
+    z-index: 5;
+    box-shadow: 0 0 6px rgba(230, 180, 34, 0.6);
+}
+
+.table-pairs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(10px, 2vw, 28px);
+    justify-content: center;
+    align-items: center;
+    padding: clamp(15px, 3vh, 25px);
+    z-index: 3;
+    position: relative;
+}
+
+/* Убираем узоры с table-pairs */
+.table-pairs::before {
+    display: none;
+}
+
+.card-pair {
+    position: relative;
+    width: clamp(70px, 9vw, 88px);
+    height: clamp(97px, 12.5vw, 122px);
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+}
+
+/* ========== НИЖНЯЯ ОБЛАСТЬ С КАРТАМИ ========== */
+.my-area {
+    grid-column: 1 / 4;
+    grid-row: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 15px clamp(15px, 3vw, 30px) 20px clamp(15px, 3vw, 30px);
+    background: linear-gradient(135deg, #1a5c3a, #0e3a22);
+    border-top: 3px solid #e6b422;
+    border-radius: 30px 30px 0 0;
+    margin-top: auto;
+    min-height: 200px;
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 5;
+}
+
+/* Восточный узор на нижней доске */
+.my-area::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.15"><path fill="none" stroke="%23e6b422" stroke-width="1" d="M10,20 L30,15 L50,20 L70,15 L90,20 M10,40 L30,35 L50,40 L70,35 L90,40 M10,60 L30,55 L50,60 L70,55 L90,60 M10,80 L30,75 L50,80 L70,75 L90,80"/><circle cx="50" cy="30" r="5" stroke="%23e6b422" stroke-width="0.8" fill="none"/><circle cx="50" cy="70" r="5" stroke="%23e6b422" stroke-width="0.8" fill="none"/></svg>');
+    background-repeat: repeat;
+    background-size: 60px 60px;
+    pointer-events: none;
+    border-radius: 30px 30px 0 0;
+}
+
+.my-area::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2));
+    border-radius: 0 0 20px 20px;
+    pointer-events: none;
+}
+
+.hand {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: clamp(-8px, -1vw, -20px);
+    z-index: 2;
+    padding-bottom: 15px;
+    width: 100%;
+}
+
+.status-toast {
+    position: fixed;
+    bottom: min(30px, 4vh);
+    left: min(30px, 3vw);
+    background: rgba(14, 42, 26, 0.95);
+    backdrop-filter: blur(12px);
+    border-left: 6px solid var(--eastern-gold);
+    color: #fff8e7;
+    padding: clamp(10px, 1.5vh, 15px) clamp(18px, 3vw, 28px);
+    border-radius: min(50px, 8vw);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: clamp(11px, 1.8vw, 14px);
+    letter-spacing: 1px;
+    z-index: 1100;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(230, 180, 34, 0.4);
+    pointer-events: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+    .status-toast {
+        white-space: normal;
+        max-width: 70vw;
+        font-size: 10px;
+        padding: 8px 16px;
+        bottom: 15px;
+        left: 15px;
+    }
+}
+
+/* ========== КНОПКИ В ПРАВОМ НИЖНЕМ УГЛУ ========== */
+.action-buttons {
+    position: fixed;
+    bottom: min(30px, 4vh);
+    right: min(20px, 3vw);
+    display: flex;
+    gap: clamp(12px, 2vw, 25px);
+    z-index: 1200;
+    background: rgba(14, 42, 26, 0.9);
+    backdrop-filter: blur(16px);
+    padding: clamp(8px, 1.2vh, 14px) clamp(18px, 3vw, 32px);
+    border-radius: min(60px, 8vw);
+    border: 2px solid rgba(230, 180, 34, 0.9);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(230, 180, 34, 0.3);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: clamp(8px, 1.2vh, 12px) clamp(16px, 2.5vw, 28px);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(12px, 1.8vw, 15px);
+    border: none;
+    border-radius: min(44px, 6vw);
+    cursor: pointer;
+    background: linear-gradient(135deg, #1a5c3a, #0e3a22);
+    color: var(--eastern-gold);
+    border: 1px solid var(--eastern-gold);
+    transition: 0.25s;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn:hover {
+    transform: scale(1.03);
+    background: linear-gradient(135deg, #2a7a4a, #1a5c3a);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(230, 180, 34, 0.6);
+    border-color: var(--gold-light);
+}
+
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+/* Кнопка "Забрать карты" тоже в правом углу, но красная */
+.action-btn-take {
+    padding: clamp(8px, 1.2vh, 12px) clamp(16px, 2.5vw, 28px);
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: clamp(12px, 1.8vw, 15px);
+    border: none;
+    border-radius: min(44px, 6vw);
+    cursor: pointer;
+    background: linear-gradient(135deg, #8b1a1a, #5c0e0e);
+    color: #ffd700;
+    border: 2px solid var(--eastern-gold);
+    transition: 0.25s;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.action-btn-take:hover {
+    transform: scale(1.03);
+    background: linear-gradient(135deg, #b22222, #8b0000);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(230, 180, 34, 0.6);
+    border-color: var(--gold-light);
+}
+
+.action-btn-take:active {
+    transform: scale(0.98);
+}
+
+@media (max-width: 700px) {
+    .action-buttons {
+        bottom: min(20px, 3vh);
+        right: min(10px, 2vw);
+        padding: 8px 16px;
+        gap: 10px;
+    }
+    .action-btn, .action-btn-take {
+        padding: 6px 12px;
+        font-size: 10px;
+    }
+}
+
+.win-message {
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: bold;
+    background: linear-gradient(135deg, #e6b422, #ffd700);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.empty-text {
+    color: #e8d5a8;
+    text-align: center;
+    font-style: italic;
+    font-size: clamp(12px, 2vw, 15px);
+    background: rgba(14, 42, 26, 0.7);
+    padding: clamp(12px, 2vh, 18px) clamp(20px, 3vw, 28px);
+    border-radius: min(60px, 8vw);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(230, 180, 34, 0.5);
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .empty-text {
+        white-space: normal;
+        font-size: 10px;
+        padding: 8px 16px;
+    }
+}
+
+.queen-mark {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: radial-gradient(circle, #ffd700, #e6b422);
+    color: #0e3a22;
+    border-radius: 50%;
+    width: clamp(24px, 3.5vw, 30px);
+    height: clamp(24px, 3.5vw, 30px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: clamp(16px, 2.5vw, 20px);
+    border: 2px solid #ffe68f;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    font-family: serif;
+}
+
+/* Chat Container */
+.chat-container {
+    position: fixed;
+    bottom: min(120px, 15vh);
+    left: min(20px, 2vw);
+    width: clamp(280px, 25vw, 320px);
+    background: rgba(14, 42, 26, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: min(20px, 3vw);
+    border: 2px solid var(--eastern-gold);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+.chat-header {
+    padding: clamp(10px, 1.5vh, 12px) clamp(12px, 2vw, 16px);
+    background: linear-gradient(135deg, #1a5c3a, #0e3a22);
+    border-bottom: 2px solid var(--eastern-gold);
+    border-radius: min(18px, 2.5vw) min(18px, 2.5vw) 0 0;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h3 {
+    color: var(--eastern-gold);
+    font-size: clamp(13px, 2vw, 16px);
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.chat-header .chat-status {
+    font-size: clamp(10px, 1.5vw, 12px);
+    color: #4caf50;
+}
+
+.chat-messages {
+    height: clamp(250px, 35vh, 300px);
+    overflow-y: auto;
+    padding: clamp(10px, 1.5vh, 12px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #1a2a1a;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--eastern-gold);
+    border-radius: 4px;
+}
+
+.chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+    animation: messageSlide 0.3s ease;
+}
+
+.chat-message.own {
+    align-self: flex-end;
+}
+
+.chat-message.other {
+    align-self: flex-start;
+}
+
+.message-sender {
+    font-size: clamp(9px, 1.2vw, 11px);
+    color: var(--eastern-gold);
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+.message-bubble {
+    background: rgba(30, 50, 35, 0.9);
+    padding: clamp(6px, 1vh, 8px) clamp(10px, 1.5vw, 12px);
+    border-radius: min(18px, 2.5vw);
+    word-wrap: break-word;
+    font-size: clamp(11px, 1.5vw, 13px);
+    color: var(--cream);
+    border: 1px solid rgba(230, 180, 34, 0.3);
+}
+
+.chat-message.own .message-bubble {
+    background: linear-gradient(135deg, #e6b422, #b8860b);
+    color: #0e3a22;
+}
+
+.message-sticker {
+    max-width: clamp(80px, 10vw, 100px);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.message-sticker:hover {
+    transform: scale(1.05);
+}
+
+.message-sticker img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.chat-input-area {
+    padding: clamp(8px, 1.5vh, 12px);
+    border-top: 1px solid rgba(230, 180, 34, 0.3);
+    display: flex;
+    gap: 8px;
+    position: relative;
+    overflow: visible;
+}
+
+.chat-input {
+    flex: 1;
+    padding: clamp(6px, 1vh, 8px) clamp(10px, 1.5vw, 12px);
+    background: rgba(26, 71, 49, 0.9);
+    border: 1px solid #e6b422;
+    border-radius: min(25px, 4vw);
+    color: var(--cream);
+    font-size: clamp(11px, 1.5vw, 13px);
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: var(--eastern-gold);
+}
+
+.chat-send-btn {
+    padding: clamp(6px, 1vh, 8px) clamp(12px, 2vw, 16px);
+    background: linear-gradient(135deg, #e6b422, #b8860b);
+    border: none;
+    border-radius: min(25px, 4vw);
+    color: #0e3a22;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: clamp(12px, 1.8vw, 14px);
+}
+
+.chat-send-btn:hover {
+    transform: scale(1.02);
+}
+
+.sticker-btn {
+    padding: clamp(6px, 1vh, 8px);
+    background: none;
+    border: 1px solid var(--eastern-gold);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: clamp(16px, 2.5vw, 20px);
+    transition: all 0.2s;
+    width: clamp(32px, 5vw, 38px);
+    height: clamp(32px, 5vw, 38px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sticker-btn:hover {
+    background: rgba(230, 180, 34, 0.2);
+}
+
+.sticker-panel {
+    display: none;
+    position: absolute;
+    bottom: 55px;
+    left: 5px;
+    right: 5px;
+    background: rgba(14, 42, 26, 0.98);
+    backdrop-filter: blur(12px);
+    border-radius: min(15px, 2vw);
+    padding: clamp(8px, 1.5vh, 10px);
+    border: 1px solid var(--eastern-gold);
+    flex-wrap: wrap;
+    gap: clamp(6px, 1vw, 8px);
+    justify-content: center;
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.sticker-panel.active {
+    display: flex;
+}
+
+.sticker-option {
+    width: clamp(40px, 6vw, 50px);
+    height: clamp(40px, 6vw, 50px);
+    cursor: pointer;
+    transition: transform 0.2s;
+    border-radius: 10px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(22px, 4vw, 28px);
+    text-align: center;
+}
+
+.sticker-option:hover {
+    transform: scale(1.1);
+    background: rgba(230, 180, 34, 0.2);
+}
+
+.sticker-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@keyframes messageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.speech-bubble {
+    position: absolute;
+    background: white;
+    border-radius: min(20px, 3vw);
+    padding: clamp(6px, 1vh, 8px) clamp(10px, 1.5vw, 15px);
+    max-width: min(150px, 25vw);
+    font-size: clamp(10px, 1.5vw, 12px);
+    color: #333;
+    font-family: 'Oswald', sans-serif;
+    z-index: 300;
+    animation: bubblePop 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--eastern-gold);
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 20px;
+    border-width: 10px 10px 0 0;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+.speech-bubble.sticker-bubble {
+    padding: 5px;
+    background: transparent;
+    border: none;
+}
+
+.speech-bubble.sticker-bubble img {
+    max-width: min(80px, 12vw);
+    border-radius: 15px;
+}
+
+@keyframes bubblePop {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Drag & Drop */
+.card[draggable="true"] {
+    cursor: grab;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.card[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.drop-active {
+    box-shadow: 0 0 50px rgba(230, 180, 34, 0.9) !important;
+    transition: box-shadow 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Animation Overlay */
+#dealAnimationOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(14, 42, 26, 0.95);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.deck-wrapper {
+    position: relative;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.deck-stack {
+    position: relative;
+    width: clamp(130px, 15vw, 160px);
+    height: clamp(182px, 21vw, 224px);
+    margin: 0 auto;
+}
+
+.deck-card-animated {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: min(14px, 2vw);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.deck-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130%;
+    height: 130%;
+    background: radial-gradient(ellipse, rgba(230, 180, 34, 0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.deck-wrapper.clickable {
+    cursor: pointer;
+    animation: glowPulse 2s ease-in-out infinite;
+}
+
+.deck-wrapper.clickable:hover {
+    transform: scale(1.05);
+}
+
+.deck-wrapper.clickable:hover .deck-glow {
+    opacity: 1;
+}
+
+.deal-instruction {
+    margin-top: clamp(25px, 5vh, 35px);
+    color: #e6b422;
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(16px, 2.5vw, 22px);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(230, 180, 34, 0.8);
+    animation: pulse 2s ease-in-out infinite;
+    text-align: center;
+}
+
+.dealer-info {
+    margin-bottom: clamp(20px, 4vh, 30px);
+    color: #fff8e7;
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(18px, 3vw, 24px);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(230, 180, 34, 0.5);
+    text-align: center;
+}
+
+.dealer-name {
+    color: #e6b422;
+    font-weight: bold;
+    font-size: clamp(22px, 3.5vw, 28px);
+    text-shadow: 0 0 30px rgba(230, 180, 34, 0.8);
+}
+
+/* Tournament Display */
+#tournamentDisplay {
+    position: fixed;
+    top: clamp(15px, 2vh, 20px);
+    right: clamp(15px, 2vw, 20px);
+    background: rgba(14, 42, 26, 0.95);
+    backdrop-filter: blur(12px);
+    border: 2px solid #e6b422;
+    border-radius: min(20px, 3vw);
+    padding: clamp(10px, 1.5vh, 15px) clamp(12px, 2vw, 20px);
+    z-index: 800;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    min-width: clamp(200px, 22vw, 260px);
+    max-width: clamp(200px, 25vw, 300px);
+}
+
+@media (max-width: 700px) {
+    #tournamentDisplay {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        min-width: 160px;
+        font-size: 10px;
+    }
+    
+    .player-right {
+        transform: rotate(0deg);
+        grid-column: 3;
+        grid-row: 1;
+    }
+    
+    .game-board {
+        grid-template-rows: minmax(60px, auto) 1fr auto;
+        padding: 8px 8px 0 8px;
+        gap: 5px;
+    }
+    
+    .player-badge {
+        padding: 6px 12px;
+    }
+    
+    .chat-container {
+        width: clamp(240px, 35vw, 280px);
+        bottom: 100px;
+        left: 10px;
+    }
+    
+    .chat-messages {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        width: clamp(55px, 14vw, 70px);
+        height: clamp(77px, 19.6vw, 98px);
+    }
+    
+    .card-pair {
+        width: clamp(55px, 14vw, 70px);
+        height: clamp(77px, 19.6vw, 98px);
+    }
+    
+    .player-name {
+        font-size: 10px;
+    }
+    
+    .player-cards {
+        font-size: 8px;
+    }
+    
+    .role-badge {
+        font-size: 7px;
+        padding: 2px 8px;
+    }
+    
+    .status-toast {
+        font-size: 8px;
+        padding: 6px 12px;
+        bottom: 10px;
+        left: 10px;
+    }
+    
+    .queen-mark {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        top: -5px;
+        right: -5px;
+    }
+    
+    .my-area {
+        min-height: 150px;
+        padding: 10px clamp(10px, 3vw, 20px) 15px clamp(10px, 3vw, 20px);
+    }
+}
+
+@media (min-width: 1200px) {
+    .card {
+        width: 88px;
+        height: 122px;
+    }
+    
+    .card-pair {
+        width: 88px;
+        height: 122px;
+    }
+    
+    .player-name {
+        font-size: 18px;
+    }
+    
+    .status-toast {
+        font-size: 14px;
+        padding: 12px 28px;
+    }
+    
+    .action-btn, .action-btn-take {
+        padding: 12px 28px;
+        font-size: 15px;
+    }
+    
+    .action-buttons {
+        padding: 12px 28px;
+        gap: 20px;
+    }
+    
+    .my-area {
+        min-height: 220px;
+    }
+}
+
+@keyframes dealCardFly {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+    80% { opacity: 0.7; }
+    100% { transform: translate(var(--fly-x), var(--fly-y)) rotate(var(--fly-rot)) scale(0.7); opacity: 0; }
+}
+
+@keyframes glowPulse {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(230, 180, 34, 0.4)); }
+    50% { filter: drop-shadow(0 0 50px rgba(230, 180, 34, 0.9)); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.03); }
+}
+
+@keyframes particleBurst {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
+}
+
+.flying-card {
+    will-change: transform;
+    filter: drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4));
+}
+
+.flying-card .card {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+/* ========== КАРТЫ КАК У ДРУГА С НАЛОЖЕНИЕМ НА СТОЛЕ И В РУКЕ ========== */
+.card {
+    width: 80px;
+    height: 120px;
+    background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, margin 0.2s;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.3);
+    position: relative;
+    border: 1px solid #333;
+}
+
+.card:hover {
+    transform: translateY(-10px) rotate(2deg);
+    box-shadow: -4px 12px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+/* Наложение карт на столе (как раньше) */
+.card-pair .card {
+    position: relative;
+    margin: 0;
+}
+
+.card-pair .card:first-child {
+    position: relative;
+    z-index: 1;
+}
+
+.card-pair .card:last-child {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 2;
+    transform: rotate(5deg);
+}
+
+/* Наложение карт в руке (как раньше) */
+.my-area .hand .card {
+    margin-left: -25px;
+    transition: margin 0.2s, transform 0.2s;
+}
+
+.my-area .hand .card:first-child {
+    margin-left: 0;
+}
+
+.my-area .hand .card:hover {
+    transform: translateY(-15px) rotate(2deg);
+    margin-left: -15px;
+}
+
+/* Красные масти */
+.card.hearts, .card.diamonds {
+    background: linear-gradient(145deg, #fff5f5 0%, #ffe0e0 100%);
+}
+
+/* Чёрные масти */
+.card.spades, .card.clubs {
+    background: linear-gradient(145deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+/* Цвета для красных мастей */
+.card.hearts .card-suit,
+.card.diamonds .card-suit,
+.card.hearts .card-value,
+.card.diamonds .card-value {
+    color: #ff0000;
+}
+
+/* Цвета для чёрных мастей */
+.card.spades .card-suit,
+.card.clubs .card-suit,
+.card.spades .card-value,
+.card.clubs .card-value {
+    color: #000000;
+}
+
+/* Стили для значений и мастей */
+.card-value {
+    font-size: 32px;
+    font-weight: bold;
+    font-family: 'Georgia', serif;
+}
+
+.card-suit {
+    font-size: 42px;
+    margin-top: -5px;
+}
+
+/* Угловые элементы (первый и последний) */
+.card-value:first-child {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 18px;
+}
+
+.card-suit:first-of-type {
+    position: absolute;
+    top: 8px;
+    left: 30px;
+    font-size: 18px;
+}
+
+.card-value:last-child {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 18px;
+    transform: rotate(180deg);
+}
+
+.card-suit:last-of-type {
+    position: absolute;
+    bottom: 8px;
+    right: 30px;
+    font-size: 18px;
+    transform: rotate(180deg);
+}
+
+/* Центральные элементы (не первый и не последний) */
+.card .card-value:not(:first-child):not(:last-child) {
+    position: static;
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
+.card .card-suit:not(:first-of-type):not(:last-of-type) {
+    position: static;
+    font-size: 44px;
+    margin-top: -5px;
+    transform: none;
+}
