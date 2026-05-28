@@ -49,6 +49,31 @@ let tournamentScores = {};
             20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
         
+        @keyframes flashPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes cardArrive {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
         .drop-active {
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.8) !important;
             transition: box-shadow 0.3s ease;
@@ -67,12 +92,12 @@ let tournamentScores = {};
             transform: scale(0.95);
         }
         
-        .flying-card {
+        .flying-card, .flying-card-to-table {
             will-change: transform;
             filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
         }
         
-        .flying-card .card {
+        .flying-card .card, .flying-card-to-table .card {
             width: 100%;
             height: 100%;
             margin: 0;
@@ -81,6 +106,38 @@ let tournamentScores = {};
         @keyframes cardFlip {
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(180deg); }
+        }
+        
+        .card-arrive {
+            animation: cardArrive 0.25s ease-out;
+        }
+        
+        .card-back {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
+            border: 2px solid #d4af37;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .card-back-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .card-back-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: rgba(212, 175, 55, 0.7);
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
         }
     `;
     document.head.appendChild(gameStyles);
@@ -147,6 +204,85 @@ function hideLoadingScreen() {
             }
         }, 500);
     }
+}
+
+// ================== ФУНКЦИЯ ОБНОВЛЕНИЯ СТАТУС-БАРА ==================
+function forceUpdateStatusBar() {
+    if (!currentGameState) return;
+    
+    const statusBar = document.getElementById('statusBar');
+    if (!statusBar) return;
+    
+    if (statusBar.hasAttribute('data-temp-message')) return;
+    
+    if (currentGameState.gameWinner) {
+        if (currentGameState.gameWinner.includes(playerName)) {
+            statusBar.innerHTML = `🏆 ВЫ ПОБЕДИТЕЛЬ! 🏆`;
+        } else {
+            statusBar.innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${currentGameState.gameWinner} 🏆`;
+        }
+        statusBar.style.background = 'linear-gradient(135deg, #d4af37, #b8860b)';
+        statusBar.style.color = '#1a0f08';
+        statusBar.style.borderLeft = '6px solid #ffd700';
+        statusBar.style.fontWeight = 'bold';
+        return;
+    }
+    
+    let statusHtml = '';
+    
+    if (currentGameState.isMyAdditionalAttackTurn) {
+        const attackCount = (currentGameState.table || []).filter(t => t.type === 'attack').length;
+        const defendCount = (currentGameState.table || []).filter(t => t.type === 'defend').length;
+        
+        if (attackCount > defendCount) {
+            statusHtml = '⏳ ОЖИДАЙТЕ ОТБОЯ ⏳<br><span style="font-size:12px">Защитник должен отбить карту</span>';
+            statusBar.style.background = 'rgba(255, 193, 7, 0.85)';
+        } else {
+            statusHtml = '➕ ВЫ ПОДКИДЫВАЕТЕ КАРТЫ ➕<br><span style="font-size:12px">Перетащите ОДНУ карту на стол или нажмите "ЗАВЕРШИТЬ ПОДКИД"</span>';
+            statusBar.style.background = 'rgba(255, 193, 7, 0.92)';
+        }
+        statusBar.style.color = '#1a0f08';
+        statusBar.style.borderLeft = '6px solid #ffc107';
+        statusBar.style.fontWeight = 'bold';
+    } 
+    else if (currentGameState.isMyTurnAttack) {
+        const attackCount = (currentGameState.table || []).filter(t => t.type === 'attack').length;
+        const defendCount = (currentGameState.table || []).filter(t => t.type === 'defend').length;
+        
+        if (attackCount > defendCount) {
+            statusHtml = '⏳ ОЖИДАЙТЕ ОТБОЯ ⏳<br><span style="font-size:12px">Противник отбивается</span>';
+            statusBar.style.background = 'rgba(220, 53, 69, 0.75)';
+        } else if (currentGameState.table && currentGameState.table.length === 0) {
+            statusHtml = '🔥 ВЫ АТАКУЕТЕ 🔥<br><span style="font-size:12px">Перетащите ОДНУ карту на стол</span>';
+            statusBar.style.background = 'rgba(220, 53, 69, 0.92)';
+        } else {
+            statusHtml = '🔥 ПОДКИДЫВАЙТЕ КАРТЫ 🔥<br><span style="font-size:12px">Или нажмите "ЗАВЕРШИТЬ ХОД"</span>';
+            statusBar.style.background = 'rgba(220, 53, 69, 0.92)';
+        }
+        statusBar.style.color = '#ffffff';
+        statusBar.style.borderLeft = '6px solid #dc3545';
+        statusBar.style.fontWeight = 'bold';
+    } 
+    else if (currentGameState.isMyTurnDefend) {
+        statusHtml = '🛡️ ВЫ ОТБИВАЕТЕСЬ 🛡️<br><span style="font-size:12px">Перетащите карту на стол или нажмите "ЗАБРАТЬ КАРТЫ"</span>';
+        statusBar.style.background = 'rgba(40, 167, 69, 0.92)';
+        statusBar.style.color = '#ffffff';
+        statusBar.style.borderLeft = '6px solid #28a745';
+        statusBar.style.fontWeight = 'bold';
+    } 
+    else {
+        let additionalInfo = '';
+        if (currentGameState.additionalAttacker) {
+            additionalInfo = ` | ✨ Подкидывает: ${currentGameState.additionalAttacker}`;
+        }
+        statusHtml = `🎴 Ходит: ${currentGameState.currentAttacker || '—'} → отбивается: ${currentGameState.currentDefender || '—'}${additionalInfo}<br><span style="font-size:12px">♢ КОЗЫРЬ: БУБНЫ</span>`;
+        statusBar.style.background = 'rgba(10, 6, 4, 0.92)';
+        statusBar.style.color = '#f5e2b0';
+        statusBar.style.borderLeft = '6px solid #d4af37';
+        statusBar.style.fontWeight = 'normal';
+    }
+    
+    statusBar.innerHTML = statusHtml;
 }
 
 // ================== АНИМАЦИЯ ВЗЯТИЯ КАРТ ==================
@@ -224,7 +360,44 @@ function animateTakeCards(tableCardsArray, targetPlayerName) {
         const flyingCard = document.createElement('div');
         flyingCard.className = 'flying-card';
         
-        const cardClone = card.cloneNode(true);
+        const cardBackDiv = document.createElement('div');
+        cardBackDiv.className = 'card-back';
+        cardBackDiv.style.cssText = `
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        `;
+        
+        const backImg = document.createElement('img');
+        backImg.src = '/back.png';
+        backImg.alt = 'Рубашка';
+        backImg.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        `;
+        backImg.onerror = () => {
+            backImg.style.display = 'none';
+            const fallback = document.createElement('div');
+            fallback.className = 'card-back-fallback';
+            fallback.style.cssText = `
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
+                border-radius: 10px;
+                border: 2px solid #d4af37;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 48px;
+                color: rgba(212, 175, 55, 0.7);
+            `;
+            fallback.textContent = '🂠';
+            cardBackDiv.appendChild(fallback);
+        };
+        cardBackDiv.appendChild(backImg);
         
         flyingCard.style.cssText = `
             position: fixed;
@@ -235,114 +408,64 @@ function animateTakeCards(tableCardsArray, targetPlayerName) {
             z-index: ${10000 + index};
             transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             transform-origin: center center;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
         `;
         
-        const flipContainer = document.createElement('div');
-        flipContainer.style.cssText = `
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transition: transform 0.4s ease;
-            transform-style: preserve-3d;
-        `;
-        
-        const frontFace = document.createElement('div');
-        frontFace.style.cssText = `
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        `;
-        frontFace.appendChild(cardClone);
-        
-        const backFace = document.createElement('div');
-        backFace.style.cssText = `
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform: rotateY(180deg);
-            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
-            border-radius: 10px;
-            border: 2px solid #d4af37;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        
-        const backPattern = document.createElement('div');
-        backPattern.style.cssText = `
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(circle at 30% 30%, rgba(212, 175, 55, 0.3), transparent);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: rgba(212, 175, 55, 0.6);
-        `;
-        backPattern.textContent = '🂠';
-        backFace.appendChild(backPattern);
-        
-        flipContainer.appendChild(frontFace);
-        flipContainer.appendChild(backFace);
-        flyingCard.appendChild(flipContainer);
-        
+        flyingCard.appendChild(cardBackDiv);
         takeOverlay.appendChild(flyingCard);
         
+        card.style.opacity = '0';
+        card.style.visibility = 'hidden';
+        
         setTimeout(() => {
-            flipContainer.style.transform = 'rotateY(180deg)';
+            const deltaX = targetPosition.x - rect.left - rect.width / 2;
+            const deltaY = targetPosition.y - rect.top - rect.height / 2;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const duration = Math.min(500, Math.max(300, distance / 2.5));
+            const randomRotate = Math.random() * 60 - 30;
             
-            setTimeout(() => {
-                const deltaX = targetPosition.x - rect.left - rect.width / 2;
-                const deltaY = targetPosition.y - rect.top - rect.height / 2;
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                const duration = Math.min(400, Math.max(250, distance / 3));
-                
-                flyingCard.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity ${duration}ms ease`;
-                flyingCard.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${Math.random() * 60 - 30}deg) scale(0.3)`;
-                flyingCard.style.opacity = '0';
-                
-                createFlyParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            }, 150);
-        }, index * 50);
+            flyingCard.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity ${duration}ms ease`;
+            flyingCard.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${randomRotate}deg) scale(0.4)`;
+            flyingCard.style.opacity = '0';
+            
+            createFlyParticles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }, index * 60);
     });
     
-    const maxDelay = allCards.length * 50 + 600;
+    const maxDelay = allCards.length * 60 + 800;
     setTimeout(() => {
         if (takeOverlay && takeOverlay.parentNode) {
             takeOverlay.remove();
         }
-        if (tableZone) {
-            const emptyDiv = tableZone.querySelector('.empty-text');
-            if (!emptyDiv) {
-                tableZone.innerHTML = '<div class="empty-text" style="text-align:center; background:rgba(0,0,0,0.5); padding:15px 25px; border-radius:60px;">❖ СТОЛ ПУСТ ❖<br>Перетащите карту сюда</div>';
-            }
-        }
+        cardPairs.forEach(pair => {
+            const cards = pair.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.opacity = '';
+                card.style.visibility = '';
+            });
+        });
     }, maxDelay);
 }
 
 function createFlyParticles(x, y) {
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
         const particle = document.createElement('div');
         particle.style.cssText = `
             position: fixed;
             left: ${x}px;
             top: ${y}px;
-            width: 4px;
-            height: 4px;
-            background: radial-gradient(circle, #d4af37, #b8860b);
+            width: 5px;
+            height: 5px;
+            background: radial-gradient(circle, #ffd700, #d4af37);
             border-radius: 50%;
             pointer-events: none;
             z-index: 10001;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
         `;
         
         const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 50 + 10;
-        const duration = 0.4 + Math.random() * 0.3;
+        const distance = Math.random() * 60 + 15;
+        const duration = 0.5 + Math.random() * 0.3;
         
         particle.style.transition = `transform ${duration}s ease-out, opacity ${duration}s ease-out`;
         
@@ -359,83 +482,190 @@ function createFlyParticles(x, y) {
     }
 }
 
-// ================== ФУНКЦИЯ ОБНОВЛЕНИЯ СТАТУС-БАРА ==================
-function forceUpdateStatusBar() {
-    if (!currentGameState) return;
+// ================== АНИМАЦИЯ ВЫСТАВЛЕНИЯ КАРТЫ ==================
+function animateCardToTableFromData(cardRect, cardClone, onComplete) {
+    const tableZone = document.getElementById('tableZone');
+    let targetX, targetY;
     
-    const statusBar = document.getElementById('statusBar');
-    if (!statusBar) return;
+    if (tableZone) {
+        const tableRect = tableZone.getBoundingClientRect();
+        targetX = tableRect.left + tableRect.width / 2;
+        targetY = tableRect.top + tableRect.height / 2;
+    } else {
+        targetX = window.innerWidth / 2;
+        targetY = window.innerHeight / 2;
+    }
     
-    if (statusBar.hasAttribute('data-temp-message')) return;
+    const flyingCard = document.createElement('div');
+    flyingCard.className = 'flying-card-to-table';
     
-    if (currentGameState.gameWinner) {
-        if (currentGameState.gameWinner.includes(playerName)) {
-            statusBar.innerHTML = `🏆 ВЫ ПОБЕДИТЕЛЬ! 🏆`;
-        } else {
-            statusBar.innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${currentGameState.gameWinner} 🏆`;
+    cardClone.style.width = '100%';
+    cardClone.style.height = '100%';
+    cardClone.style.margin = '0';
+    
+    flyingCard.style.cssText = `
+        position: fixed;
+        left: ${cardRect.left}px;
+        top: ${cardRect.top}px;
+        width: ${cardRect.width}px;
+        height: ${cardRect.height}px;
+        z-index: 10060;
+        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        transform-origin: center center;
+        filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+        opacity: 1;
+    `;
+    
+    flyingCard.appendChild(cardClone);
+    document.body.appendChild(flyingCard);
+    
+    const deltaX = targetX - cardRect.left - cardRect.width / 2;
+    const deltaY = targetY - cardRect.top - cardRect.height / 2;
+    const randomRotate = (Math.random() - 0.5) * 20;
+    
+    setTimeout(() => {
+        flyingCard.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${randomRotate}deg) scale(0.9)`;
+        createEnhancedTrailEffect(cardRect.left + cardRect.width / 2, cardRect.top + cardRect.height / 2, targetX, targetY);
+    }, 20);
+    
+    setTimeout(() => {
+        if (flyingCard && flyingCard.parentNode) {
+            flyingCard.remove();
         }
-        statusBar.style.background = 'linear-gradient(135deg, #d4af37, #b8860b)';
-        statusBar.style.color = '#1a0f08';
-        statusBar.style.borderLeft = '6px solid #ffd700';
-        statusBar.style.fontWeight = 'bold';
+        if (onComplete) onComplete();
+    }, 450);
+}
+
+function createEnhancedTrailEffect(startX, startY, endX, endY) {
+    const steps = 12;
+    for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const x = startX + (endX - startX) * t;
+        const y = startY + (endY - startY) * t;
+        
+        setTimeout(() => {
+            const trail = document.createElement('div');
+            const size = 6 + (1 - t) * 6;
+            trail.style.cssText = `
+                position: fixed;
+                left: ${x}px;
+                top: ${y}px;
+                width: ${size}px;
+                height: ${size}px;
+                background: radial-gradient(circle, #ffd700, #d4af37);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 10055;
+                opacity: ${0.7 - t * 0.5};
+                transform: translate(-50%, -50%);
+                filter: blur(${2 - t * 1.5}px);
+                box-shadow: 0 0 ${8 * (1 - t)}px rgba(212, 175, 55, 0.8);
+                transition: opacity 0.2s ease;
+            `;
+            document.body.appendChild(trail);
+            
+            setTimeout(() => {
+                trail.style.opacity = '0';
+                setTimeout(() => trail.remove(), 200);
+            }, 100);
+        }, i * 25);
+    }
+    
+    setTimeout(() => {
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position: fixed;
+            left: ${endX}px;
+            top: ${endY}px;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.8), rgba(212, 175, 55, 0.2), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10054;
+            transform: translate(-50%, -50%);
+            animation: flashPulse 0.3s ease-out forwards;
+        `;
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 300);
+    }, 420);
+}
+
+// ================== АНИМАЦИЯ КАРТЫ ДРУГОГО ИГРОКА ==================
+function animateCardFromPlayerToTable(data) {
+    let playerRect = null;
+    
+    const players = document.querySelectorAll('.player-badge');
+    for (let player of players) {
+        const nameElement = player.querySelector('.player-name');
+        if (nameElement && nameElement.textContent === data.playerUsername) {
+            playerRect = player.getBoundingClientRect();
+            break;
+        }
+    }
+    
+    if (!playerRect) {
+        console.log('⚠️ Не найдена позиция игрока:', data.playerUsername);
         return;
     }
     
-    let statusHtml = '';
-    
-    if (currentGameState.isMyAdditionalAttackTurn) {
-        const attackCount = (currentGameState.table || []).filter(t => t.type === 'attack').length;
-        const defendCount = (currentGameState.table || []).filter(t => t.type === 'defend').length;
-        
-        if (attackCount > defendCount) {
-            statusHtml = '⏳ ОЖИДАЙТЕ ОТБОЯ ⏳<br><span style="font-size:12px">Защитник должен отбить карту</span>';
-            statusBar.style.background = 'rgba(255, 193, 7, 0.85)';
-        } else {
-            statusHtml = '➕ ВЫ ПОДКИДЫВАЕТЕ КАРТЫ ➕<br><span style="font-size:12px">Перетащите ОДНУ карту на стол</span>';
-            statusBar.style.background = 'rgba(255, 193, 7, 0.92)';
-        }
-        statusBar.style.color = '#1a0f08';
-        statusBar.style.borderLeft = '6px solid #ffc107';
-        statusBar.style.fontWeight = 'bold';
-    } 
-    else if (currentGameState.isMyTurnAttack) {
-        const attackCount = (currentGameState.table || []).filter(t => t.type === 'attack').length;
-        const defendCount = (currentGameState.table || []).filter(t => t.type === 'defend').length;
-        
-        if (attackCount > defendCount) {
-            statusHtml = '⏳ ОЖИДАЙТЕ ОТБОЯ ⏳<br><span style="font-size:12px">Противник отбивается</span>';
-            statusBar.style.background = 'rgba(220, 53, 69, 0.75)';
-        } else if (currentGameState.table && currentGameState.table.length === 0) {
-            statusHtml = '🔥 ВЫ АТАКУЕТЕ 🔥<br><span style="font-size:12px">Перетащите ОДНУ карту на стол</span>';
-            statusBar.style.background = 'rgba(220, 53, 69, 0.92)';
-        } else {
-            statusHtml = '🔥 ПОДКИДЫВАЙТЕ КАРТЫ 🔥<br><span style="font-size:12px">Или завершите ход</span>';
-            statusBar.style.background = 'rgba(220, 53, 69, 0.92)';
-        }
-        statusBar.style.color = '#ffffff';
-        statusBar.style.borderLeft = '6px solid #dc3545';
-        statusBar.style.fontWeight = 'bold';
-    } 
-    else if (currentGameState.isMyTurnDefend) {
-        statusHtml = '🛡️ ВЫ ОТБИВАЕТЕСЬ 🛡️<br><span style="font-size:12px">Перетащите карту на стол или нажмите</span>';
-        statusBar.style.background = 'rgba(40, 167, 69, 0.92)';
-        statusBar.style.color = '#ffffff';
-        statusBar.style.borderLeft = '6px solid #28a745';
-        statusBar.style.fontWeight = 'bold';
-    } 
-    else {
-        let additionalInfo = '';
-        if (currentGameState.additionalAttacker) {
-            additionalInfo = ` | ✨ Подкидывает: ${currentGameState.additionalAttacker}`;
-        }
-        statusHtml = `🎴 Ходит: ${currentGameState.currentAttacker || '—'} → отбивается: ${currentGameState.currentDefender || '—'}${additionalInfo}<br><span style="font-size:12px">♢ КОЗЫРЬ: БУБНЫ</span>`;
-        statusBar.style.background = 'rgba(10, 6, 4, 0.92)';
-        statusBar.style.color = '#f5e2b0';
-        statusBar.style.borderLeft = '6px solid #d4af37';
-        statusBar.style.fontWeight = 'normal';
+    const tableZone = document.getElementById('tableZone');
+    let endX, endY;
+    if (tableZone) {
+        const tableRect = tableZone.getBoundingClientRect();
+        endX = tableRect.left + tableRect.width / 2;
+        endY = tableRect.top + tableRect.height / 2;
+    } else {
+        endX = window.innerWidth / 2;
+        endY = window.innerHeight / 2;
     }
     
-    statusBar.innerHTML = statusHtml;
+    const flyingCard = document.createElement('div');
+    flyingCard.className = 'flying-card-to-table';
+    
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.innerHTML = `
+        <div class="card-back">
+            <img src="/back.png" alt="Рубашка" class="card-back-img" onerror="this.style.display='none'; this.parentElement.classList.add('card-back-fallback');">
+            <div class="card-back-fallback-content">🂠</div>
+        </div>
+    `;
+    cardDiv.style.cssText = 'width:100%; height:100%; margin:0;';
+    flyingCard.appendChild(cardDiv);
+    
+    const startX = playerRect.left + playerRect.width / 2 - 40;
+    const startY = playerRect.top + playerRect.height / 2 - 60;
+    
+    flyingCard.style.cssText = `
+        position: fixed;
+        left: ${startX}px;
+        top: ${startY}px;
+        width: 80px;
+        height: 120px;
+        z-index: 10060;
+        transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        transform-origin: center center;
+        filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+        opacity: 1;
+    `;
+    
+    document.body.appendChild(flyingCard);
+    
+    const deltaX = endX - startX - 40;
+    const deltaY = endY - startY - 60;
+    const randomRotate = (Math.random() - 0.5) * 20;
+    
+    setTimeout(() => {
+        flyingCard.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${randomRotate}deg) scale(0.9)`;
+        createEnhancedTrailEffect(startX + 40, startY + 60, endX, endY);
+    }, 20);
+    
+    setTimeout(() => {
+        if (flyingCard && flyingCard.parentNode) {
+            flyingCard.remove();
+        }
+    }, 450);
 }
 
 showLoadingScreen();
@@ -672,6 +902,17 @@ function initGameUI() {
                 }
             }
         }
+    });
+    
+    socket.on('cardAnimation', (data) => {
+        console.log('🎬 Получена анимация карты от сервера:', data);
+        
+        if (data.playerUsername === playerName) {
+            console.log('⏩ Пропускаем анимацию для себя (уже обработана локально)');
+            return;
+        }
+        
+        animateCardFromPlayerToTable(data);
     });
     
     socket.on('sultanDeclared', (data) => {
@@ -1320,7 +1561,6 @@ function renderPlayersInfo(players, attacker, defender) {
     
     const reordered = reorderPlayersForMe(players, playerName);
     
-    // Скрываем правого игрока, если всего 2 игрока
     if (players.length === 2) {
         playerRight.style.display = 'none';
     } else {
@@ -1403,7 +1643,6 @@ function createCardImage(card, className, onClickHandler = null, cardIndex = nul
         div.addEventListener('dragstart', handleDragStart);
         div.addEventListener('dragend', handleDragEnd);
         
-        // Добавляем клик
         div.style.cursor = 'pointer';
         div.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1530,9 +1769,6 @@ function renderMyHand(hand, state) {
         cardDiv.addEventListener('touchstart', handleTouchStart, { passive: true });
         cardDiv.addEventListener('touchmove', handleTouchMove, { passive: false });
         cardDiv.addEventListener('touchend', handleTouchEnd);
-        
-        // DRAG & DROP уже добавлены в createCardImage
-        // Клик тоже добавлен в createCardImage
         
         handEl.appendChild(cardDiv);
     });
@@ -1735,6 +1971,15 @@ function handleCardAction(cardIndex) {
         return;
     }
     
+    const handEl = document.getElementById('myHand');
+    const cardElements = handEl ? handEl.querySelectorAll('.my-card') : [];
+    const cardElement = cardElements[cardIndex];
+    
+    if (!cardElement) {
+        console.log('❌ Элемент карты не найден');
+        return;
+    }
+    
     if (isMyAttackTurn && !isMyAdditionalAttackTurn) {
         const attackCards = tableCards.filter(t => t.type === 'attack').length;
         const defendCards = tableCards.filter(t => t.type === 'defend').length;
@@ -1745,6 +1990,15 @@ function handleCardAction(cardIndex) {
         }
     }
     
+    const cardRect = cardElement.getBoundingClientRect();
+    const cardClone = cardElement.cloneNode(true);
+    const cardData = {
+        rect: cardRect,
+        clone: cardClone,
+        element: cardElement,
+        index: cardIndex
+    };
+    
     isActionInProgress = true;
     
     if (actionTimeout) clearTimeout(actionTimeout);
@@ -1752,43 +2006,55 @@ function handleCardAction(cardIndex) {
         isActionInProgress = false;
         actionTimeout = null;
         console.log('🔓 Блокировка действий снята по таймауту');
-    }, 3000);
+    }, 5000);
+    
+    let actionType = '';
+    let emitData = {};
     
     if (isMyAdditionalAttackTurn) {
-        console.log('🎯 Отправка additionalAttack, карта:', cardIndex);
-        socket.emit('additionalAttack', { cardIndex: cardIndex }, (result) => {
-            isActionInProgress = false;
-            if (actionTimeout) clearTimeout(actionTimeout);
-            
-            if (result && !result.success) {
-                showActionError(result.error || 'Нельзя подкинуть эту карту');
-            }
-        });
+        actionType = 'additionalAttack';
+        emitData = { cardIndex: cardIndex };
     } else if (isMyAttackTurn) {
-        console.log('🎯 Отправка attack, карта:', cardIndex);
-        socket.emit('attack', { cardIndex: cardIndex }, (result) => {
-            isActionInProgress = false;
-            if (actionTimeout) clearTimeout(actionTimeout);
-            
-            if (result && !result.success) {
-                showActionError(result.error || 'Нельзя сходить этой картой');
-            }
-        });
+        actionType = 'attack';
+        emitData = { cardIndex: cardIndex };
     } else if (isMyDefendTurn) {
-        console.log('🎯 Отправка defend, карта:', cardIndex);
-        socket.emit('defend', { cardIndex: cardIndex }, (result) => {
-            isActionInProgress = false;
-            if (actionTimeout) clearTimeout(actionTimeout);
-            
-            if (result && !result.success) {
-                showActionError(result.error || 'Нельзя побить этой картой');
-            }
-        });
+        actionType = 'defend';
+        emitData = { cardIndex: cardIndex };
     } else {
         isActionInProgress = false;
-        if (actionTimeout) clearTimeout(actionTimeout);
         showActionError('Сейчас не ваш ход');
+        return;
     }
+    
+    console.log(`🎯 Отправка ${actionType}, карта:`, cardIndex);
+    
+    // Сразу скрываем карту и запускаем анимацию
+    cardData.element.style.opacity = '0';
+    cardData.element.style.visibility = 'hidden';
+    cardData.element.style.pointerEvents = 'none';
+    
+    // Запускаем анимацию
+    animateCardToTableFromData(cardData.rect, cardData.clone, () => {
+        // Анимация завершена, теперь отправляем подтверждение на сервер
+        console.log('✨ Анимация завершена, отправляем подтверждение на сервер');
+        
+        socket.emit(actionType, emitData, (result) => {
+            console.log(`📡 Результат ${actionType}:`, result);
+            
+            if (result && !result.success) {
+                // Если ошибка - возвращаем карту обратно
+                console.log('❌ Ошибка, возвращаем карту');
+                showActionError(result?.error || 'Ошибка при выполнении действия');
+                cardData.element.style.opacity = '';
+                cardData.element.style.visibility = '';
+                cardData.element.style.pointerEvents = '';
+            }
+            
+            isActionInProgress = false;
+            if (actionTimeout) clearTimeout(actionTimeout);
+            if (handEl) handEl.style.pointerEvents = '';
+        });
+    });
 }
 
 function showActionError(message) {
@@ -1823,18 +2089,17 @@ function renderActionButtons(state) {
     let showEndAdditional = false;
     let showTakeCards = false;
     
-    // Кнопка "Завершить ход" - только когда атакует, все карты отбиты И нет дополнительной атаки
+    // Кнопка "Завершить ход" - когда атакует И ВСЕ КАРТЫ ОТБИТЫ
     if (state.isMyTurnAttack && !state.isMyAdditionalAttackTurn && table.length > 0 && allDefended) {
         showEndTurn = true;
     }
     
-    // Кнопка "Завершить подкид" - только когда игрок подкидывает И ВСЕ КАРТЫ ОТБИТЫ (allDefended)
-    // НЕЛЬЗЯ завершить подкид, если есть неотбитые карты!
+    // Кнопка "Завершить подкид" - когда подкидывает И ВСЕ КАРТЫ ОТБИТЫ
     if (state.isMyAdditionalAttackTurn && allDefended) {
         showEndAdditional = true;
     }
     
-    // Кнопка "Забрать карты" - только когда защищается и есть неотбитые карты
+    // Кнопка "Забрать карты" - когда защищается и есть неотбитые карты
     if (state.isMyTurnDefend && hasUndefended) {
         showTakeCards = true;
     }
@@ -1861,18 +2126,19 @@ function renderActionButtons(state) {
         endBtn.className = 'action-btn';
         endBtn.textContent = '✅ ЗАВЕРШИТЬ ХОД';
         endBtn.style.background = 'linear-gradient(135deg, #ff1313, #800000)';
-        endBtn.onclick = function() {
+        endBtn.onclick = () => {
             console.log('Нажата кнопка Завершить ход');
             if (socket && socket.connected) {
                 endBtn.disabled = true;
-                endBtn.style.display = 'none';
-                
-                socket.emit('endTurn', {}, function(result) {
+                endBtn.style.opacity = '0.5';
+                socket.emit('endTurn', {}, (result) => {
                     console.log('Результат endTurn:', result);
                     if (result && !result.success) {
-                        alert(result.error || 'Ошибка');
+                        showActionError(result.error || 'Ошибка');
                         endBtn.disabled = false;
-                        endBtn.style.display = 'block';
+                        endBtn.style.opacity = '1';
+                    } else {
+                        endBtn.style.display = 'none';
                     }
                 });
             }
@@ -1885,18 +2151,19 @@ function renderActionButtons(state) {
         endAddBtn.className = 'action-btn';
         endAddBtn.textContent = '✅ ЗАВЕРШИТЬ ПОДКИД';
         endAddBtn.style.background = 'linear-gradient(135deg, #b56a1a, #7a3e0a)';
-        endAddBtn.onclick = function() {
+        endAddBtn.onclick = () => {
             console.log('Нажата кнопка Завершить подкид');
             if (socket && socket.connected) {
                 endAddBtn.disabled = true;
-                endAddBtn.style.display = 'none';
-                
-                socket.emit('endAdditionalAttack', {}, function(result) {
+                endAddBtn.style.opacity = '0.5';
+                socket.emit('endAdditionalAttack', {}, (result) => {
                     console.log('Результат endAdditionalAttack:', result);
                     if (result && !result.success) {
-                        alert(result.error || 'Ошибка');
+                        showActionError(result.error || 'Ошибка');
                         endAddBtn.disabled = false;
-                        endAddBtn.style.display = 'block';
+                        endAddBtn.style.opacity = '1';
+                    } else {
+                        endAddBtn.style.display = 'none';
                     }
                 });
             }
@@ -1908,17 +2175,18 @@ function renderActionButtons(state) {
         const takeBtn = document.createElement('button');
         takeBtn.className = 'action-btn-take';
         takeBtn.textContent = '📥 ЗАБРАТЬ КАРТЫ';
-        takeBtn.onclick = function() {
+        takeBtn.onclick = () => {
             console.log('Нажата кнопка Забрать карты');
             if (socket && socket.connected) {
                 takeBtn.disabled = true;
-                takeBtn.style.display = 'none';
-                
-                socket.emit('takeCards', {}, function(result) {
+                takeBtn.style.opacity = '0.5';
+                socket.emit('takeCards', {}, (result) => {
                     if (result && !result.success) {
-                        alert(result.error || 'Ошибка');
+                        showActionError(result.error || 'Ошибка');
                         takeBtn.disabled = false;
-                        takeBtn.style.display = 'block';
+                        takeBtn.style.opacity = '1';
+                    } else {
+                        takeBtn.style.display = 'none';
                     }
                 });
             }

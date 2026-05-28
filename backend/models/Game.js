@@ -42,6 +42,45 @@ class Game {
         console.log(`👑 Условие победы: выиграть ${this.consecutiveWinsNeeded} раунда ПОДРЯД`);
         console.log(`⚠️ Если серия побед будет прервана - игра заканчивается НИЧЬЕЙ!`);
         console.log(`💰 Банк игры: ${this.totalPot} кранов`);
+        console.log(`👥 Режим игры: ${maxPlayers} игрока(ов)`);
+    }
+
+    broadcastCardAnimation(actionType, data) {
+        const roomId = this.lobbyId;
+        if (!roomId) return;
+        
+        const io = require('../server');
+        if (io && io.io) {
+            io.io.to(`game_${roomId}`).emit('cardAnimation', {
+                action: actionType,
+                playerUsername: data.playerUsername,
+                card: {
+                    rank: data.card.rank,
+                    suit: data.card.suit,
+                    value: data.card.value
+                },
+                cardIndex: data.cardIndex,
+                targetPosition: data.targetPosition,
+                attackCard: data.attackCard ? {
+                    rank: data.attackCard.rank,
+                    suit: data.attackCard.suit
+                } : null
+            });
+        }
+    }
+
+    broadcastTakeAnimation(takenBy, cards) {
+        const roomId = this.lobbyId;
+        if (!roomId) return;
+        
+        const io = require('../server');
+        if (io && io.io) {
+            io.io.to(`game_${roomId}`).emit('takeCardsAnimation', {
+                takenBy: takenBy,
+                cards: cards,
+                cardCount: cards.length
+            });
+        }
     }
 
     startDealingAnimation() {
@@ -87,7 +126,7 @@ class Game {
         const loserConsecutive = this._tournamentData.playersConsecutive.get(loserPlayer.username) || 0;
         
         if (loserConsecutive >= 1) {
-            console.log(`⚠️ ${loserPlayer.username} имел серию из ${loserConsecutive} побед! Доп.раунд НЕ ЗАПУСКАЕТСЯ!`);
+            console.log(`⚠️ ${loserPlayer.username} имеет серию побед (${loserConsecutive})! Доп.раунд не запускается!`);
             
             this.players.forEach(p => {
                 if (p.socket && p.socket.connected) {
@@ -235,6 +274,7 @@ class Game {
             if (lowestRank === Infinity) attackerIdx = Math.floor(Math.random() * 2);
             this.currentAttackerIndex = attackerIdx;
             this.currentDefenderIndex = (attackerIdx + 1) % 2;
+            console.log(`🎲 Первый атакующий: ${this.players[attackerIdx].username}`);
             return;
         }
         
@@ -242,11 +282,13 @@ class Game {
             if (this.players[i].hand.some(c => c.rank === '6' && c.suit === 'diamonds')) {
                 this.currentAttackerIndex = i;
                 this.currentDefenderIndex = this.getNextActivePlayer(i);
+                console.log(`🎲 Первый атакующий (6♦): ${this.players[i].username}`);
                 return;
             }
         }
         this.currentAttackerIndex = 0;
         this.currentDefenderIndex = this.getNextActivePlayer(0);
+        console.log(`🎲 Первый атакующий (случайный): ${this.players[0].username}`);
     }
 
     attack(playerId, cardIndex) {
@@ -269,9 +311,20 @@ class Game {
             }
         }
         
+        const playedCard = { rank: card.rank, suit: card.suit, value: card.value };
+        
         attacker.hand.splice(cardIndex, 1);
         this.table.push({ type: 'attack', card });
         this.allowedRanks.add(card.rank);
+        
+        this.broadcastCardAnimation('attack', {
+            playerUsername: attacker.username,
+            card: playedCard,
+            cardIndex: cardIndex,
+            targetPosition: 'table'
+        });
+        
+        console.log(`⚔️ ${attacker.username} атакует картой ${card.rank} ${card.suit} (осталось: ${attacker.hand.length})`);
         
         this.checkWinCondition();
         return { success: true };
@@ -305,53 +358,31 @@ class Game {
             return { success: false, error: 'Нельзя побить этой картой' };
         }
         
+        const playedCard = { rank: defendCard.rank, suit: defendCard.suit, value: defendCard.value };
+        
         defender.hand.splice(cardIndex, 1);
         this.table.push({ type: 'defend', card: defendCard, pairIndex: lastAttackIdx });
         this.allowedRanks.add(defendCard.rank);
         
+        this.broadcastCardAnimation('defend', {
+            playerUsername: defender.username,
+            card: playedCard,
+            cardIndex: cardIndex,
+            targetPosition: 'table',
+            attackCard: attackCard
+        });
+        
         console.log(`🛡️ ${defender.username} отбивается картой ${defendCard.rank} ${defendCard.suit} (осталось: ${defender.hand.length})`);
         
+        // Дама завершает ход автоматически
         if (defendCard.rank === 'Q') {
             console.log(`♕ Дама завершает ход!`);
             this.endBout();
             return { success: true, queenPlayed: true };
         }
         
-        // После успешного отбоя, проверяем, могут ли подкинуть еще
-        const attackCount = this.table.filter(t => t.type === 'attack').length;
-        const defendCount = this.table.filter(t => t.type === 'defend').length;
-        const allDefended = attackCount === defendCount;
-        
-        if (allDefended) {
-            // Все карты отбиты - можно подкинуть еще
-            const attacker = this.players[this.currentAttackerIndex];
-            const playersWithCards = this.players.filter(p => p.hand.length > 0).length;
-            
-            if (playersWithCards === 2) {
-                if (this.canAttackerThrowAgain(attacker)) {
-                    this.additionalAttackerIndex = this.currentAttackerIndex;
-                    console.log(`✨ Атакующий ${attacker.username} может подкинуть еще одну карту`);
-                } else {
-                    // Не может подкинуть - отбой
-                    this.endBout();
-                }
-            } else {
-                let thirdIdx = -1;
-                for (let i = 0; i < this.players.length; i++) {
-                    if (i !== this.currentAttackerIndex && i !== this.currentDefenderIndex && this.players[i].hand.length > 0) {
-                        thirdIdx = i;
-                        break;
-                    }
-                }
-                if (thirdIdx !== -1 && this.canThirdPlayerAttack(this.players[thirdIdx])) {
-                    this.additionalAttackerIndex = thirdIdx;
-                    console.log(`✨ Игрок ${this.players[thirdIdx].username} может подкинуть карту`);
-                } else {
-                    // Не могут подкинуть - отбой
-                    this.endBout();
-                }
-            }
-        }
+        // НЕ ПРОВЕРЯЕМ может ли кто-то подкинуть!
+        // Просто сообщаем, что карта отбита, а игроки сами решат, подкидывать или заканчивать
         
         if (defender.hand.length === 0) {
             console.log(`🏆 ${defender.username} избавился от всех карт!`);
@@ -361,6 +392,7 @@ class Game {
         return { success: true };
     }
 
+
     endBout(isDraw = false) {
         console.log('🔄 endBout вызван (отбой)');
         
@@ -368,7 +400,6 @@ class Game {
         this.allowedRanks.clear();
         this.additionalAttackerIndex = null;
         
-        // Получаем всех игроков с картами
         const playersWithCards = this.players.filter(p => p.hand.length > 0);
         
         if (playersWithCards.length === 0) {
@@ -381,18 +412,22 @@ class Game {
             return;
         }
         
-        // ПРАВИЛО ПРИ ОТБОЕ: Отбивающийся становится атакующим
-        this.currentAttackerIndex = this.currentDefenderIndex;
-        
-        // Находим нового защитника (следующий после нового атакующего)
-        let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
-        let attempts = 0;
-        while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
-            nextDefender = (nextDefender + 1) % this.players.length;
-            attempts++;
+        if (this.maxPlayers === 2) {
+            // Для игры на двоих: отбивающийся становится атакующим
+            this.currentAttackerIndex = this.currentDefenderIndex;
+            this.currentDefenderIndex = (this.currentAttackerIndex + 1) % 2;
+        } else {
+            // Для игры на троих: отбивающийся становится атакующим
+            this.currentAttackerIndex = this.currentDefenderIndex;
+            
+            let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
+            let attempts = 0;
+            while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
+                nextDefender = (nextDefender + 1) % this.players.length;
+                attempts++;
+            }
+            this.currentDefenderIndex = nextDefender;
         }
-        
-        this.currentDefenderIndex = nextDefender;
         
         console.log(`🔄 ОТБОЙ! Отбивающийся теперь атакует`);
         console.log(`   Атакующий: ${this.players[this.currentAttackerIndex]?.username} (${this.players[this.currentAttackerIndex]?.hand.length} карт)`);
@@ -418,21 +453,6 @@ class Game {
         return currentIndex;
     }
 
-    getNextPlayerClockwise(currentIndex) {
-        let nextIndex = (currentIndex + 1) % this.players.length;
-        let attempts = 0;
-        
-        while (attempts < this.players.length) {
-            const player = this.players[nextIndex];
-            if (player && player.hand.length > 0) {
-                return nextIndex;
-            }
-            nextIndex = (nextIndex + 1) % this.players.length;
-            attempts++;
-        }
-        return currentIndex;
-    }
-
     takeCards(playerId) {
         if (this._gameFrozen) return { success: false, error: 'Раунд окончен' };
         const defender = this.players[this.currentDefenderIndex];
@@ -442,45 +462,39 @@ class Game {
         
         const cardsForAnimation = takenCards.map(card => ({
             rank: card.rank,
-            suit: card.suit
+            suit: card.suit,
+            value: card.value
         }));
         
         defender.hand.push(...takenCards);
         
-        this.players.forEach(p => {
-            if (p.socket && p.socket.connected) {
-                p.socket.emit('takeCardsAnimation', {
-                    takenCards: cardsForAnimation,
-                    takenBy: defender.username,
-                    cardCount: takenCards.length
-                });
-            }
-        });
+        this.broadcastTakeAnimation(defender.username, cardsForAnimation);
         
         this.table = [];
         this.allowedRanks.clear();
         this.additionalAttackerIndex = null;
         
-        // ПРАВИЛО ПРИ ВЗЯТИИ КАРТ: Отбивающийся НЕ ходит
-        // Ход переходит к следующему игроку после отбивающегося
-        let nextAttacker = (this.currentDefenderIndex + 1) % this.players.length;
-        let attempts = 0;
-        while (attempts < this.players.length && this.players[nextAttacker].hand.length === 0) {
-            nextAttacker = (nextAttacker + 1) % this.players.length;
-            attempts++;
+        if (this.maxPlayers === 2) {
+            // Для игры на двоих: ход переходит к следующему игроку
+            this.currentAttackerIndex = (this.currentDefenderIndex + 1) % 2;
+            this.currentDefenderIndex = (this.currentAttackerIndex + 1) % 2;
+        } else {
+            let nextAttacker = (this.currentDefenderIndex + 1) % this.players.length;
+            let attempts = 0;
+            while (attempts < this.players.length && this.players[nextAttacker].hand.length === 0) {
+                nextAttacker = (nextAttacker + 1) % this.players.length;
+                attempts++;
+            }
+            this.currentAttackerIndex = nextAttacker;
+            
+            let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
+            attempts = 0;
+            while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
+                nextDefender = (nextDefender + 1) % this.players.length;
+                attempts++;
+            }
+            this.currentDefenderIndex = nextDefender;
         }
-        
-        this.currentAttackerIndex = nextAttacker;
-        
-        // Находим защитника (следующий после атакующего)
-        let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
-        attempts = 0;
-        while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
-            nextDefender = (nextDefender + 1) % this.players.length;
-            attempts++;
-        }
-        
-        this.currentDefenderIndex = nextDefender;
         
         console.log(`📥 ВЗЯТИЕ КАРТ! ${defender.username} забрал ${takenCards.length} карт и теряет ход`);
         console.log(`   Атакующий: ${this.players[this.currentAttackerIndex]?.username} (${this.players[this.currentAttackerIndex]?.hand.length} карт)`);
@@ -502,38 +516,46 @@ class Game {
         
         console.log(`🔄 ${attacker.username} завершает ход. Атак: ${attackCount}, защит: ${defendCount}`);
         
-        // Проверяем, может ли кто-то подкинуть
         const playersWithCards = this.players.filter(p => p.hand.length > 0);
         
-        if (playersWithCards.length === 2) {
-            // Игра на двоих
+        if (this.maxPlayers === 2) {
+            // Для игры на двоих
             if (this.canAttackerThrowAgain(attacker)) {
                 this.additionalAttackerIndex = this.currentAttackerIndex;
                 console.log(`✨ Атакующий ${attacker.username} может подкинуть карты`);
                 return { success: true, additionalAttack: true };
             } else {
-                // Не может подкинуть - отбой, отбивающийся атакует
                 this.endBout();
                 return { success: true, additionalAttack: false };
             }
         } else {
-            // Игра на троих - проверяем третьего игрока
-            let thirdIdx = -1;
-            for (let i = 0; i < this.players.length; i++) {
-                if (i !== this.currentAttackerIndex && i !== this.currentDefenderIndex && this.players[i].hand.length > 0) {
-                    thirdIdx = i;
-                    break;
+            // Для игры на троих
+            if (playersWithCards.length === 2) {
+                if (this.canAttackerThrowAgain(attacker)) {
+                    this.additionalAttackerIndex = this.currentAttackerIndex;
+                    console.log(`✨ Атакующий ${attacker.username} может подкинуть карты`);
+                    return { success: true, additionalAttack: true };
+                } else {
+                    this.endBout();
+                    return { success: true, additionalAttack: false };
                 }
-            }
-            
-            if (thirdIdx !== -1 && this.canThirdPlayerAttack(this.players[thirdIdx])) {
-                this.additionalAttackerIndex = thirdIdx;
-                console.log(`✨ Игрок ${this.players[thirdIdx].username} может подкинуть карты`);
-                return { success: true, additionalAttack: true };
             } else {
-                // Не могут подкинуть - отбой, отбивающийся атакует
-                this.endBout();
-                return { success: true, additionalAttack: false };
+                let thirdIdx = -1;
+                for (let i = 0; i < this.players.length; i++) {
+                    if (i !== this.currentAttackerIndex && i !== this.currentDefenderIndex && this.players[i].hand.length > 0) {
+                        thirdIdx = i;
+                        break;
+                    }
+                }
+                
+                if (thirdIdx !== -1 && this.canThirdPlayerAttack(this.players[thirdIdx])) {
+                    this.additionalAttackerIndex = thirdIdx;
+                    console.log(`✨ Игрок ${this.players[thirdIdx].username} может подкинуть карты`);
+                    return { success: true, additionalAttack: true };
+                } else {
+                    this.endBout();
+                    return { success: true, additionalAttack: false };
+                }
             }
         }
     }
@@ -549,29 +571,36 @@ class Game {
         const card = allowed.hand[cardIndex];
         if (!card) return { success: false, error: 'Карта не найдена' };
         
-        // Проверяем, есть ли на столе неотбитые карты
         const attackCount = this.table.filter(t => t.type === 'attack').length;
         const defendCount = this.table.filter(t => t.type === 'defend').length;
         const hasUndefended = attackCount > defendCount;
         
-        // НЕЛЬЗЯ подкидывать, если есть неотбитые карты!
         if (hasUndefended) {
             return { success: false, error: 'Сначала дождитесь отбоя текущей карты!' };
         }
         
+        // Проверяем, можно ли подкинуть эту карту (по рангу)
         const ranksOnTable = new Set(this.table.map(t => t.card.rank));
         if (!ranksOnTable.has(card.rank)) {
             return { success: false, error: 'Можно подкидывать только карты того же достоинства' };
         }
         
+        const playedCard = { rank: card.rank, suit: card.suit, value: card.value };
+        
         allowed.hand.splice(cardIndex, 1);
         this.table.push({ type: 'attack', card });
         this.allowedRanks.add(card.rank);
         
+        this.broadcastCardAnimation('additionalAttack', {
+            playerUsername: allowed.username,
+            card: playedCard,
+            cardIndex: cardIndex,
+            targetPosition: 'table'
+        });
+        
         console.log(`➕ ${allowed.username} подкидывает карту ${card.rank} ${card.suit} (осталось: ${allowed.hand.length})`);
         
-        // После подкидывания сбрасываем additionalAttackerIndex,
-        // чтобы игрок не мог подкинуть еще одну карту до отбоя
+        // Сбрасываем флаг дополнительной атаки после успешного подкидывания
         this.additionalAttackerIndex = null;
         
         if (allowed.hand.length === 0) {
@@ -593,17 +622,20 @@ class Game {
         this.allowedRanks.clear();
         this.additionalAttackerIndex = null;
         
-        // Отбой - отбивающийся становится атакующим
-        this.currentAttackerIndex = this.currentDefenderIndex;
-        
-        let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
-        let attempts = 0;
-        while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
-            nextDefender = (nextDefender + 1) % this.players.length;
-            attempts++;
+        if (this.maxPlayers === 2) {
+            this.currentAttackerIndex = this.currentDefenderIndex;
+            this.currentDefenderIndex = (this.currentAttackerIndex + 1) % 2;
+        } else {
+            this.currentAttackerIndex = this.currentDefenderIndex;
+            
+            let nextDefender = (this.currentAttackerIndex + 1) % this.players.length;
+            let attempts = 0;
+            while (attempts < this.players.length && this.players[nextDefender].hand.length === 0) {
+                nextDefender = (nextDefender + 1) % this.players.length;
+                attempts++;
+            }
+            this.currentDefenderIndex = nextDefender;
         }
-        
-        this.currentDefenderIndex = nextDefender;
         
         console.log(`🔄 ПОДКИД ЗАВЕРШЕН! Отбивающийся теперь атакует`);
         
@@ -652,7 +684,6 @@ class Game {
         const playersWithCards = this.players.filter(p => p.hand.length > 0);
         const playersWithoutCards = this.players.filter(p => p.hand.length === 0);
         
-        // Дополнительный раунд
         if (this._previousLoser && playersWithCards.length === 1 && playersWithoutCards.length === 2) {
             if (this._roundOverSent) return true;
             this._roundOverSent = true;
@@ -675,7 +706,6 @@ class Game {
             return true;
         }
         
-        // Основной раунд
         if (playersWithCards.length === 1 && playersWithoutCards.length >= 1) {
             if (this._roundOverSent) return true;
             this._roundOverSent = true;
@@ -699,7 +729,6 @@ class Game {
             return true;
         }
         
-        // Ничья
         if (playersWithCards.length === 0 && !this._roundOverSent) {
             this._roundOverSent = true;
             this._gameFrozen = true;
@@ -719,7 +748,6 @@ class Game {
             return true;
         }
         
-        // Аварийная проверка
         const attacker = this.players[this.currentAttackerIndex];
         const defender = this.players[this.currentDefenderIndex];
         

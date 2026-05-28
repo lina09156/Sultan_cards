@@ -9,7 +9,12 @@ let readyStatus = new Map(); // lobbyId -> Map(username -> ready)
 // Максимальное количество одновременно открытых лобби
 const MAX_VISIBLE_LOBBIES = 5;
 
+// Глобальная ссылка на io
+let ioInstance = null;
+
 module.exports = (io) => {
+    ioInstance = io;
+    
     io.on('connection', (socket) => {
         console.log(`[${new Date().toLocaleTimeString()}] Игрок подключился: ${socket.id}`);
 
@@ -35,7 +40,6 @@ module.exports = (io) => {
                 delete lobby.disconnectedPlayers[username];
             }
             
-            // Восстанавливаем статус готовности при переподключении
             if (!readyStatus.has(lobbyId)) {
                 readyStatus.set(lobbyId, new Map());
             }
@@ -129,7 +133,6 @@ module.exports = (io) => {
                 return;
             }
             
-            // Подсчитываем количество открытых (waiting) лобби
             const waitingLobbiesCount = Array.from(lobbies.values()).filter(l => l.status === 'waiting').length;
             
             if (waitingLobbiesCount >= MAX_VISIBLE_LOBBIES) {
@@ -140,7 +143,6 @@ module.exports = (io) => {
                 return;
             }
             
-            // Удаляем пустые лобби, где создатель один и нет других игроков
             for (const [id, lobby] of lobbies.entries()) {
                 if (lobby.creator === username && lobby.status === 'waiting') {
                     const hasOtherPlayers = lobby.players.some(p => p.username !== username);
@@ -164,13 +166,13 @@ module.exports = (io) => {
                 maxPlayers: maxPlayers,
                 status: 'waiting',
                 disconnectedPlayers: {},
-                chatHistory: []
+                chatHistory: [],
+                createdAt: Date.now()
             };
             lobbies.set(lobbyId, lobby);
             
-            // Инициализируем статус готовности (создатель всегда считается готовым)
             const readyMap = new Map();
-            readyMap.set(username, true); // создатель всегда готов
+            readyMap.set(username, true);
             readyStatus.set(lobbyId, readyMap);
             
             socket.join(lobbyId);
@@ -183,6 +185,8 @@ module.exports = (io) => {
         socket.on('getLobbies', () => {
             const allLobbies = Array.from(lobbies.values())
                 .filter(l => l.status === 'waiting' && l.players.length < l.maxPlayers)
+                .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+                .slice(0, MAX_VISIBLE_LOBBIES)
                 .map(l => ({
                     lobbyId: l.lobbyId,
                     name: l.name,
@@ -227,7 +231,6 @@ module.exports = (io) => {
             socket.currentLobby = lobbyId;
             socket.currentUsername = username;
             
-            // Добавляем статус готовности
             if (!readyStatus.has(lobbyId)) {
                 readyStatus.set(lobbyId, new Map());
             }
@@ -263,7 +266,6 @@ module.exports = (io) => {
                 return;
             }
             
-            // Создатель лобби не может менять статус готовности (всегда готов)
             if (lobby.creator === username) {
                 if (callback) callback({ success: false, error: 'Создатель всегда готов' });
                 return;
@@ -278,13 +280,11 @@ module.exports = (io) => {
             const currentReady = readyMap.get(username) || false;
             readyMap.set(username, !currentReady);
             
-            // Обновляем статус в lobby.players
             const player = lobby.players.find(p => p.username === username);
             if (player) {
                 player.ready = !currentReady;
             }
             
-            // Отправляем обновленный список готовности всем в лобби
             const allReadyStatus = {};
             for (const [playerName, isReady] of readyMap.entries()) {
                 allReadyStatus[playerName] = isReady;
@@ -323,7 +323,6 @@ module.exports = (io) => {
             lobby.players = lobby.players.filter(p => p.username !== usernameToKick);
             lobby.playersCount = lobby.players.length;
             
-            // Удаляем статус готовности
             const readyMap = readyStatus.get(lobbyId);
             if (readyMap) {
                 readyMap.delete(usernameToKick);
@@ -358,7 +357,6 @@ module.exports = (io) => {
             lobby.players = lobby.players.filter(p => p.username !== username);
             lobby.playersCount = lobby.players.length;
             
-            // Удаляем статус готовности
             const readyMap = readyStatus.get(lobbyId);
             if (readyMap) {
                 readyMap.delete(username);
@@ -396,7 +394,6 @@ module.exports = (io) => {
                 return;
             }
             
-            // ПРОВЕРКА ГОТОВНОСТИ ВСЕХ ИГРОКОВ (кроме создателя)
             const readyMap = readyStatus.get(lobbyId);
             let allReady = true;
             let notReadyPlayers = [];
@@ -449,7 +446,6 @@ module.exports = (io) => {
                 return;
             }
             
-            // Списываем краны у всех игроков и считаем банк
             let totalPot = 0;
             for (const player of lobby.players) {
                 try {
@@ -493,7 +489,6 @@ module.exports = (io) => {
             
             activeGames.set(lobbyId, game);
             
-            // Получаем обновленные балансы и отправляем игрокам
             for (const player of lobby.players) {
                 try {
                     const statsResponse = await fetch(`http://localhost:3000/api/auth/check?username=${player.username}`);
@@ -680,7 +675,6 @@ module.exports = (io) => {
                     if (!lobby.disconnectedPlayers) lobby.disconnectedPlayers = {};
                     lobby.disconnectedPlayers[disconnectedUsername] = { socketId: socket.id, disconnectTime: Date.now() };
                     
-                    // Удаляем статус готовности
                     const readyMap = readyStatus.get(lobbyId);
                     if (readyMap) {
                         readyMap.delete(disconnectedUsername);
@@ -734,70 +728,15 @@ module.exports = (io) => {
             }
         });
 
-        socket.on('takeCardsAnimation', (data) => {
-            console.log('🎬 Получена анимация взятия карт:', data);
-            
-            // Показываем временное уведомление в статус-баре
-            const statusBar = document.getElementById('statusBar');
-            let restoreTimeout = null;
-            
-            if (statusBar && data.takenBy !== playerName) {
-                // Сохраняем текущее содержимое только если это не наше собственное уведомление
-                const tempMessage = `📥 ${data.takenBy} забирает ${data.cardCount} карт со стола!`;
-                
-                // Если в статус-баре уже есть временное сообщение - не перезаписываем
-                if (!statusBar.hasAttribute('data-temp-message')) {
-                    statusBar.setAttribute('data-original-html', statusBar.innerHTML);
-                    statusBar.setAttribute('data-original-bg', statusBar.style.background);
-                    statusBar.setAttribute('data-temp-message', 'true');
-                    
-                    statusBar.innerHTML = tempMessage;
-                    statusBar.style.background = 'rgba(212, 175, 55, 0.3)';
-                    
-                    // Устанавливаем таймаут на восстановление через 2 секунды
-                    restoreTimeout = setTimeout(() => {
-                        if (statusBar && statusBar.hasAttribute('data-temp-message')) {
-                            const originalHtml = statusBar.getAttribute('data-original-html');
-                            const originalBg = statusBar.getAttribute('data-original-bg');
-                            
-                            if (originalHtml) statusBar.innerHTML = originalHtml;
-                            if (originalBg) statusBar.style.background = originalBg;
-                            else statusBar.style.background = '';
-                            
-                            statusBar.removeAttribute('data-temp-message');
-                            statusBar.removeAttribute('data-original-html');
-                            statusBar.removeAttribute('data-original-bg');
-                        }
-                    }, 2000);
-                }
-            }
-            
-            // Запускаем анимацию карт
-            if (currentGameState && currentGameState.table && currentGameState.table.length > 0) {
-                animateTakeCards(currentGameState.table, data.takenBy);
-            } else {
-                const tableZone = document.getElementById('tableZone');
-                if (tableZone) {
-                    const cards = tableZone.querySelectorAll('.card-pair');
-                    if (cards.length > 0) {
-                        animateTakeCards([], data.takenBy);
-                    }
-                }
-            }
-        });
-
         function generateLobbyId() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
         
         function broadcastLobbiesList() {
-            // Получаем все ожидающие лобби, сортируем по времени создания (старые первые)
             const waitingLobbies = Array.from(lobbies.values())
                 .filter(l => l.status === 'waiting' && l.players.length < l.maxPlayers)
-                .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+                .slice(0, MAX_VISIBLE_LOBBIES);
             
-            // Ограничиваем до MAX_VISIBLE_LOBBIES
-            const visibleLobbies = waitingLobbies.slice(0, MAX_VISIBLE_LOBBIES);
-            
-            const lobbiesList = visibleLobbies.map(l => ({
+            const lobbiesList = waitingLobbies.map(l => ({
                 lobbyId: l.lobbyId,
                 name: l.name,
                 creator: l.creator,
@@ -878,7 +817,6 @@ module.exports = (io) => {
                     return;
                 }
                 
-                // Дополнительный раунд для 3 игроков
                 if (game.players.length === 3 && losers.length === 1 && winners.length >= 1 && !game._subRoundCompleted) {
                     const loser = losers[0];
                     
@@ -938,7 +876,6 @@ module.exports = (io) => {
                     return;
                 }
                 
-                // Завершение дополнительного раунда
                 if (game._subRoundCompleted && winners.length >= 1 && losers.length === 1) {
                     const subRoundWinner = winners.find(p => p.username !== game._previousLoser?.username);
                     
@@ -1003,7 +940,6 @@ module.exports = (io) => {
                     return;
                 }
                 
-                // Стандартный раунд
                 if (winners.length >= 1 && losers.length === 1 && !game._subRoundCompleted) {
                     const roundWinner = winners[0].username;
                     const loser = losers[0].username;

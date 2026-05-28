@@ -51,10 +51,12 @@ app.get('/deposit', (req, res) => {
 // Подключаем обработчик игры
 require('./socket/gameHandler')(io);
 
+// Экспортируем io для использования в других модулях
+module.exports.io = io;
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
-    // Проверяем статус подключения к MongoDB
     if (mongoose.connection.readyState === 1) {
         console.log('📊 MongoDB статус: Подключена');
     } else {
@@ -64,9 +66,11 @@ server.listen(PORT, () => {
 });
 
 server.on('connection', (socket) => {
-    socket.setTimeout(60000); // 60 секунд таймаут
+    socket.setTimeout(60000);
     socket.on('timeout', () => {
         console.log('Socket timeout');
         socket.destroy();
     });
 });
+
+module.exports.io = io;
