@@ -1305,3 +1305,144 @@ body::after {
     will-change: transform;
     filter: drop-shadow(0 8px 25px rgba(0, 0, 0, 0.4));
 }
+
+@keyframes cardShred {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    30% {
+        transform: scale(1.3) rotate(15deg);
+        opacity: 0.9;
+        filter: blur(2px);
+    }
+    60% {
+        transform: scale(0.8) rotate(-25deg);
+        opacity: 0.6;
+        filter: blur(4px);
+    }
+    100% {
+        transform: scale(0) rotate(45deg);
+        opacity: 0;
+        filter: blur(8px);
+        visibility: hidden;
+    }
+}
+
+@keyframes shatterEffect {
+    0% {
+        transform: scale(0);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-8px, -6px); }
+    20% { transform: translate(6px, 8px); }
+    30% { transform: translate(-5px, 4px); }
+    40% { transform: translate(4px, -5px); }
+    50% { transform: translate(-3px, 3px); }
+    60% { transform: translate(2px, -2px); }
+    70% { transform: translate(-2px, 1px); }
+    80% { transform: translate(1px, -1px); }
+    90% { transform: translate(0, 0); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes sparkle {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes particleExplosion {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(var(--px), var(--py)) scale(0);
+        opacity: 0;
+    }
+}
+
+.screen-shake {
+    animation: screenShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.card-shred {
+    animation: cardShred 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    pointer-events: none;
+}
+
+.sparkle-particle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: radial-gradient(circle, #ffd700, #ffaa00, #ff6600);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10070;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+.explosion-particle {
+    position: fixed;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #fff, #ffd700, #ff8800);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10071;
+}
+
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-8px, -6px); }
+    20% { transform: translate(6px, 8px); }
+    30% { transform: translate(-5px, 4px); }
+    40% { transform: translate(4px, -5px); }
+    50% { transform: translate(-3px, 3px); }
+    60% { transform: translate(2px, -2px); }
+    70% { transform: translate(-2px, 1px); }
+    80% { transform: translate(1px, -1px); }
+    90% { transform: translate(0, 0); }
+    100% { transform: translate(0, 0); }
+}
+
+.screen-shake {
+    animation: screenShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.spark-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10080;
+    will-change: transform, opacity;
+}
+
+@keyframes flashFade {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
