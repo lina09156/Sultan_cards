@@ -2620,6 +2620,80 @@ function exitGame() {
     }
 }
 
+function adjustGameLayout() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isLandscape = window.innerWidth > window.innerHeight;
+    
+    if (isMobile) {
+        const statusBar = document.getElementById('statusBar');
+        const actionButtons = document.querySelector('.action-buttons');
+        
+        if (isLandscape) {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) chatContainer.style.display = 'none';
+            if (statusBar) statusBar.style.fontSize = '10px';
+            if (actionButtons) actionButtons.style.padding = '4px 8px';
+        } else {
+            const chatContainer = document.getElementById('chatContainer');
+            if (chatContainer) chatContainer.style.display = '';
+            if (statusBar) statusBar.style.fontSize = '';
+            if (actionButtons) actionButtons.style.padding = '';
+        }
+        
+        const myHand = document.getElementById('myHand');
+        if (myHand) {
+            const cardCount = myHand.children.length;
+            if (cardCount > 6) {
+                myHand.style.gap = '-20px';
+            } else if (cardCount > 4) {
+                myHand.style.gap = '-15px';
+            } else {
+                myHand.style.gap = '';
+            }
+        }
+    }
+}
+
+// Функция для отключения hover-эффектов на мобильных
+function disableHoverOnMobile() {
+    if ('ontouchstart' in window) {
+        const style = document.createElement('style');
+        style.textContent = `
+            .card:hover {
+                transform: none !important;
+            }
+            .card:active {
+                transform: scale(0.95) !important;
+            }
+            .action-btn:hover, .action-btn-take:hover {
+                transform: none !important;
+            }
+            .action-btn:active, .action-btn-take:active {
+                transform: scale(0.98) !important;
+            }
+            .lobby-item:hover {
+                transform: none !important;
+            }
+            .join-lobby-btn:hover, .create-lobby-btn:hover {
+                transform: none !important;
+            }
+            .start-game-btn:hover, .leave-lobby-btn:hover {
+                transform: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+
+// Вызываем при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    adjustGameLayout();
+    disableHoverOnMobile();
+    window.addEventListener('resize', adjustGameLayout);
+    window.addEventListener('orientationchange', () => setTimeout(adjustGameLayout, 100));
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM загружен, инициализация GameUI (Luxury Casino)');
     initGameUI();

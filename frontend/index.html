@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>СУЛТАН - Вход</title>
-    <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -20,7 +20,7 @@
             align-items: center;
             justify-content: center;
             font-family: 'Oswald', 'Playfair Display', sans-serif;
-            padding: 20px;
+            padding: clamp(10px, 3vw, 20px);
             position: relative;
         }
         
@@ -32,7 +32,7 @@
             width: 100%;
             height: 100%;
             background-image: radial-gradient(circle at 20% 40%, rgba(212, 175, 55, 0.08) 2px, transparent 2px);
-            background-size: 50px 50px;
+            background-size: clamp(30px, 8vw, 50px) clamp(30px, 8vw, 50px);
             pointer-events: none;
         }
         
@@ -44,8 +44,8 @@
         .auth-box {
             background: rgba(10, 6, 4, 0.92);
             backdrop-filter: blur(12px);
-            padding: 45px;
-            border-radius: 40px;
+            padding: clamp(25px, 6vw, 45px);
+            border-radius: clamp(30px, 8vw, 40px);
             text-align: center;
             box-shadow: 0 0 70px rgba(212, 175, 55, 0.35);
             border: 2px solid #d4af37;
@@ -54,7 +54,7 @@
         h1 {
             color: #d4af37;
             margin-bottom: 8px;
-            font-size: 38px;
+            font-size: clamp(28px, 8vw, 38px);
             text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
             letter-spacing: 2px;
             font-family: 'Oswald', sans-serif;
@@ -63,7 +63,7 @@
         .subtitle {
             color: #c9af7b;
             margin-bottom: 35px;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             letter-spacing: 1px;
         }
         
@@ -76,11 +76,11 @@
         
         .tab {
             flex: 1;
-            padding: 12px;
+            padding: clamp(10px, 3vw, 12px);
             background: none;
             border: none;
             color: #aaa;
-            font-size: 18px;
+            font-size: clamp(16px, 4vw, 18px);
             cursor: pointer;
             transition: all 0.3s;
             font-family: 'Oswald', sans-serif;
@@ -103,7 +103,7 @@
         
         input {
             width: 100%;
-            padding: 16px;
+            padding: clamp(14px, 4vw, 16px);
             margin: 15px 0;
             background: rgba(30, 20, 12, 0.8);
             border: 1.5px solid #997a00;
@@ -127,13 +127,13 @@
         
         button {
             width: 100%;
-            padding: 16px;
+            padding: clamp(14px, 4vw, 16px);
             margin: 15px 0;
             background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
             color: #1a0f08;
             border: none;
             border-radius: 50px;
-            font-size: 18px;
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -156,7 +156,7 @@
             margin-top: 20px;
             padding: 12px;
             border-radius: 50px;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             min-height: 50px;
         }
         
@@ -176,7 +176,7 @@
             margin-top: 30px;
             padding-top: 25px;
             border-top: 1px solid rgba(212, 175, 55, 0.3);
-            font-size: 13px;
+            font-size: clamp(11px, 3vw, 13px);
             color: #aa9977;
             text-align: left;
         }
@@ -184,7 +184,7 @@
         .rules h3 {
             color: #d4af37;
             margin-bottom: 12px;
-            font-size: 16px;
+            font-size: clamp(14px, 4vw, 16px);
             letter-spacing: 1px;
         }
         
@@ -206,6 +206,49 @@
         
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .auth-box {
+                padding: 25px 20px;
+            }
+            
+            .tabs {
+                gap: 5px;
+            }
+            
+            .tab {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .rules {
+                margin-top: 20px;
+                padding-top: 20px;
+            }
+            
+            .rules p {
+                margin: 6px 0;
+            }
+        }
+        
+        @media (max-width: 380px) {
+            .auth-box {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .tab {
+                font-size: 12px;
+            }
+            
+            input, button {
+                padding: 12px;
+                margin: 10px 0;
+            }
         }
     </style>
 </head>
@@ -368,6 +411,17 @@
                 console.error('Ошибка проверки авторизации:', error);
             }
         }
+        
+        document.getElementById('loginUsername')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+        document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
+        });
+        document.getElementById('regConfirm')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') register();
+        });
+        
         checkAuth();
     </script>
 </body>

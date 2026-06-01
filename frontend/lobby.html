@@ -2,10 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Лобби - Sultan</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -34,7 +33,7 @@
             width: 100%;
             height: 100%;
             background-image: radial-gradient(circle at 20% 40%, rgba(212, 175, 55, 0.06) 2px, transparent 2px);
-            background-size: 50px 50px;
+            background-size: clamp(30px, 8vw, 50px) clamp(30px, 8vw, 50px);
             pointer-events: none;
             z-index: 0;
         }
@@ -44,6 +43,7 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
+            padding: 0 clamp(10px, 2vw, 20px);
         }
         
         .header {
@@ -57,11 +57,13 @@
             border-radius: 20px;
             border: 2px solid #d4af37;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.3);
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .logo h1 {
             color: #d4af37;
-            font-size: 28px;
+            font-size: clamp(24px, 5vw, 28px);
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
             letter-spacing: 2px;
         }
@@ -70,6 +72,7 @@
             display: flex;
             align-items: center;
             gap: 20px;
+            flex-wrap: wrap;
         }
         
         .compact-profile {
@@ -91,7 +94,7 @@
         
         .compact-username {
             color: #d4af37;
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             font-weight: bold;
         }
         
@@ -105,12 +108,12 @@
         }
         
         .compact-coins span:first-child {
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
         }
         
         .compact-coins span:last-child {
             color: #d4af37;
-            font-size: 16px;
+            font-size: clamp(14px, 3.5vw, 16px);
             font-weight: bold;
         }
         
@@ -124,6 +127,7 @@
             transition: all 0.3s;
             width: auto;
             margin: 0;
+            font-size: clamp(12px, 3vw, 14px);
         }
         
         .logout-btn:hover {
@@ -132,7 +136,8 @@
             border-color: #d4af37;
         }
         
-        .profile-modal {
+        /* Модальные окна */
+        .profile-modal, .deposit-modal, .edit-name-modal, .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -146,18 +151,39 @@
             justify-content: center;
         }
         
-        .profile-modal.active {
+        .profile-modal.active, .deposit-modal.active, .edit-name-modal.active, .modal.active {
             display: flex;
         }
         
         .profile-card {
             background: linear-gradient(145deg, #1a0f08, #0a0604);
             border-radius: 40px;
-            width: 450px;
+            width: min(90%, 450px);
             max-width: 90%;
             border: 2px solid #d4af37;
             box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
             overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        .deposit-card {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 40px;
+            width: min(90%, 500px);
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        .edit-name-card, .modal-content {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 40px;
+            width: min(90%, 380px);
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
             animation: modalSlideIn 0.3s ease;
         }
         
@@ -172,18 +198,34 @@
             }
         }
         
-        .profile-header {
+        .profile-header, .deposit-header {
             background: linear-gradient(135deg, #d4af37, #b8860b);
             padding: 30px;
             text-align: center;
             position: relative;
         }
         
-        .profile-header h2 {
+        .profile-header h2, .deposit-header h3 {
             color: #1a0f08;
-            font-size: 28px;
-            font-weight: bold;
+            font-size: clamp(24px, 6vw, 28px);
             margin-bottom: 5px;
+        }
+        
+        .deposit-header p {
+            color: #2a1a0a;
+            font-size: clamp(11px, 2.5vw, 12px);
+        }
+        
+        .test-badge {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            background: rgba(255, 193, 7, 0.9);
+            color: #1a0f08;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: bold;
         }
         
         .profile-edit-btn {
@@ -205,7 +247,7 @@
             transform: scale(1.02);
         }
         
-        .profile-close {
+        .profile-close, .deposit-close {
             position: absolute;
             top: 20px;
             left: 20px;
@@ -220,12 +262,12 @@
             transition: all 0.2s;
         }
         
-        .profile-close:hover {
+        .profile-close:hover, .deposit-close:hover {
             background: #8b0000;
             transform: scale(1.05);
         }
         
-        .profile-body {
+        .profile-body, .deposit-body {
             padding: 30px;
         }
         
@@ -251,7 +293,7 @@
         
         .stat-value {
             color: #d4af37;
-            font-size: 28px;
+            font-size: clamp(24px, 5vw, 28px);
             font-weight: bold;
         }
         
@@ -269,6 +311,8 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid #d4af37;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         
         .coins-info {
@@ -311,87 +355,7 @@
             box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
         }
         
-        .deposit-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(15px);
-            z-index: 3500;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .deposit-modal.active {
-            display: flex;
-        }
-        
-        .deposit-card {
-            background: linear-gradient(145deg, #1a0f08, #0a0604);
-            border-radius: 40px;
-            width: 500px;
-            max-width: 90%;
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
-            animation: modalSlideIn 0.3s ease;
-        }
-        
-        .deposit-header {
-            background: linear-gradient(135deg, #d4af37, #b8860b);
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .deposit-header h3 {
-            color: #1a0f08;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        
-        .deposit-header p {
-            color: #2a1a0a;
-            font-size: 12px;
-        }
-        
-        .test-badge {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            background: rgba(255, 193, 7, 0.9);
-            color: #1a0f08;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .deposit-close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: rgba(26, 15, 8, 0.7);
-            border: none;
-            color: #fff;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            transition: all 0.2s;
-        }
-        
-        .deposit-close:hover {
-            background: #8b0000;
-        }
-        
-        .deposit-body {
-            padding: 30px;
-        }
-        
+        /* Пополнение */
         .rate-info {
             background: rgba(212, 175, 55, 0.1);
             border-radius: 15px;
@@ -517,56 +481,10 @@
             cursor: not-allowed;
         }
         
-        .deposit-loading {
-            display: none;
-            text-align: center;
-            margin-top: 15px;
-        }
-        
-        .deposit-loading .spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 2px solid #d4af37;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        
-        .deposit-loading span {
-            color: #c9af7b;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .edit-name-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 4000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .edit-name-modal.active {
-            display: flex;
-        }
-        
+        /* Смена имени */
         .edit-name-card {
-            background: linear-gradient(145deg, #1a0f08, #0a0604);
-            border-radius: 30px;
-            padding: 35px;
-            width: 380px;
-            max-width: 90%;
-            border: 2px solid #d4af37;
             text-align: center;
+            padding: 35px;
         }
         
         .edit-name-card h3 {
@@ -618,10 +536,12 @@
             color: #faf4e0;
         }
         
+        /* Основной контент */
         .main-wrapper {
             display: flex;
             gap: 25px;
             padding-bottom: 20px;
+            flex-wrap: wrap;
         }
         
         .main-content {
@@ -647,7 +567,6 @@
             backdrop-filter: blur(10px);
             border-radius: 24px;
             border: 2px solid #d4af37;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             display: none;
             flex-direction: column;
             height: 600px;
@@ -670,7 +589,7 @@
         .section-header h2 {
             color: #d4af37;
             letter-spacing: 1px;
-            font-size: 22px;
+            font-size: clamp(18px, 4vw, 22px);
         }
         
         .lobby-limit-info {
@@ -692,6 +611,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         #searchLobbyInput {
@@ -702,7 +622,7 @@
             border-radius: 40px;
             color: #faf4e0;
             font-family: 'Roboto', sans-serif;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
         }
         
         #searchLobbyInput:focus {
@@ -750,6 +670,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
             transition: all 0.2s;
         }
         
@@ -798,6 +720,8 @@
             margin-bottom: 20px;
             padding-bottom: 12px;
             border-bottom: 2px solid rgba(212, 175, 55, 0.4);
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .current-lobby-header h2 {
@@ -827,12 +751,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .player-info {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .player-name {
@@ -904,6 +831,7 @@
             display: flex;
             gap: 12px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .start-game-btn {
@@ -957,89 +885,7 @@
             padding: 40px;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: #1a0f08;
-            padding: 32px;
-            border-radius: 28px;
-            min-width: 380px;
-            border: 2px solid #d4af37;
-            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
-        }
-        
-        .modal-content h3 {
-            color: #d4af37;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        .modal-content input {
-            width: 100%;
-            padding: 14px;
-            margin: 12px 0;
-            background: rgba(30, 20, 12, 0.9);
-            border: 1.5px solid #997a00;
-            border-radius: 40px;
-            color: #faf4e0;
-            font-size: 15px;
-        }
-        
-        .modal-content input:focus {
-            outline: none;
-            border-color: #d4af37;
-        }
-        
-        .modal-content label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 15px 0;
-            color: #faf4e0;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-        }
-        
-        .confirm-btn {
-            flex: 1;
-            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-            color: #1a0f08;
-            border: none;
-            padding: 12px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .cancel-btn {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            color: #faf4e0;
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            padding: 12px;
-            border-radius: 40px;
-            cursor: pointer;
-        }
-        
+        /* Чат лобби */
         .chat-header-lobby {
             padding: 16px 20px;
             background: linear-gradient(135deg, #1a0f08, #0a0604);
@@ -1106,13 +952,17 @@
         }
         
         .message-sticker-lobby {
-            max-width: 100px;
+            max-width: 60px;
+            width: 60px;
         }
         
         .message-sticker-lobby img {
             width: 100%;
             height: auto;
             border-radius: 10px;
+            max-width: 60px;
+            max-height: 60px;
+            object-fit: contain;
         }
         
         .chat-input-area-lobby {
@@ -1123,6 +973,7 @@
             position: relative;
             overflow: visible;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .chat-input-lobby {
@@ -1199,8 +1050,8 @@
         }
         
         .sticker-option-lobby {
-            width: 45px;
-            height: 45px;
+            width: 55px;
+            height: 55px;
             cursor: pointer;
             transition: transform 0.2s;
             border-radius: 8px;
@@ -1220,6 +1071,33 @@
             height: 100%;
             object-fit: contain;
             border-radius: 6px;
+        }
+        
+        /* Декор внизу - центрированный SVG */
+        .cards-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        
+        .cards-svg {
+            display: block;
+            margin: 0 auto;
+            width: min(900px, 95vw);
+            height: auto;
+            filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
+            opacity: 0.85;
+            transition: all 0.3s ease;
+        }
+        
+        .cards-svg:hover {
+            opacity: 1;
+            filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.7));
         }
         
         .toast-notification {
@@ -1267,54 +1145,21 @@
             border-radius: 4px;
         }
         
-        /* ========== УЗОР ИЗ БОЛЬШИХ КАРТ ВНИЗУ СТРАНИЦЫ ========== */
-        .cards-footer {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 30px;
-            padding: 20px;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .cards-svg {
-            width: min(900px, 95vw);
-            height: auto;
-            filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
-            opacity: 0.85;
-            transition: all 0.3s ease;
-        }
-        
-        .cards-svg:hover {
-            opacity: 1;
-            filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.7));
-        }
-        
-        @media (max-width: 600px) {
-            .cards-footer {
-                margin-top: 20px;
-                padding: 10px;
-            }
-        }
-        
+        /* Медиа-запросы */
         @media (max-width: 1100px) {
-            .main-wrapper { flex-direction: column; }
-            .lobby-chat-section { width: 100%; height: 350px; }
-            .main-content { grid-template-columns: 1fr; }
-            .user-header { flex-wrap: wrap; gap: 10px; }
-        }
-        
-        @media (max-width: 600px) {
-            .section-header {
+            .main-wrapper {
                 flex-direction: column;
-                align-items: stretch;
             }
-            .search-box {
-                flex-wrap: wrap;
+            .main-content {
+                grid-template-columns: 1fr;
             }
-            #searchLobbyInput {
+            .lobby-chat-section {
                 width: 100%;
+                height: 350px;
+            }
+            .user-header {
+                flex-wrap: wrap;
+                gap: 10px;
             }
             .toast-notification {
                 white-space: normal;
@@ -1322,6 +1167,178 @@
                 font-size: 12px;
                 padding: 10px 16px;
                 width: 90%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                padding: 15px;
+            }
+            
+            .user-header {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .lobbies-section, .current-lobby-section {
+                padding: 15px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            #searchLobbyInput {
+                width: 100%;
+            }
+            
+            .lobby-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .player-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .lobby-actions {
+                flex-direction: column;
+            }
+            
+            .cards-footer {
+                margin-top: 20px;
+                padding: 10px;
+            }
+            
+            .cards-svg {
+                width: 100%;
+            }
+            
+            .stats-grid {
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 10px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .stat-icon {
+                font-size: 22px;
+            }
+            
+            .coins-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .coins-info {
+                justify-content: center;
+            }
+            
+            .preset-buttons {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .message-sticker-lobby {
+                max-width: 45px;
+                width: 45px;
+            }
+            
+            .message-sticker-lobby img {
+                max-width: 45px;
+                max-height: 45px;
+            }
+            
+            .sticker-option-lobby {
+                width: 45px;
+                height: 45px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .compact-profile {
+                padding: 4px 12px;
+            }
+            
+            .compact-username {
+                font-size: 12px;
+            }
+            
+            .logout-btn {
+                padding: 6px 16px;
+                font-size: 12px;
+            }
+            
+            .profile-header, .deposit-header {
+                padding: 20px;
+            }
+            
+            .profile-body, .deposit-body {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
+            }
+            
+            .stat-label {
+                font-size: 10px;
+            }
+            
+            .coins-info .amount {
+                font-size: 24px;
+            }
+            
+            .add-coins-btn {
+                padding: 8px 16px;
+                font-size: 16px;
+            }
+            
+            .preset-btn {
+                font-size: 11px;
+                padding: 6px;
+            }
+            
+            .currency-input input {
+                font-size: 16px;
+                padding: 12px 12px 12px 40px;
+            }
+            
+            .currency-symbol {
+                font-size: 16px;
+                left: 14px;
+            }
+        }
+        
+        @media (max-width: 900px) and (orientation: landscape) {
+            .lobby-chat-section {
+                height: 280px;
+            }
+            
+            .chat-messages-lobby {
+                max-height: 180px;
+            }
+            
+            .cards-footer {
+                display: none;
             }
         }
     </style>
@@ -1397,7 +1414,7 @@
         </div>
     </div>
     
-    <!-- ========== УЗОР ИЗ БОЛЬШИХ КАРТ ВНИЗУ СТРАНИЦЫ ========== -->
+    <!-- SVG карты по центру -->
     <div class="cards-footer">
         <svg class="cards-svg" viewBox="0 0 850 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6"/>
@@ -1425,28 +1442,13 @@
             <text x="430" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-5,430,90)">♥</text>
             <text x="465" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-5,465,130)">♥</text>
             <text x="442" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,442,138)">10</text>
-            <rect x="510" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(8,552,95)"/>
-            <text x="532" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,532,67)">K</text>
-            <text x="532" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(8,532,85)">♦</text>
-            <text x="565" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(8,565,125)">♦</text>
-            <text x="542" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,542,133)">K</text>
-            <rect x="610" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-3,652,100)"/>
-            <text x="630" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,72)">A</text>
-            <text x="630" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,90)">♠</text>
-            <text x="665" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-3,665,130)">♠</text>
-            <text x="642" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,642,138)">A</text>
-            <rect x="710" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(12,752,95)"/>
-            <text x="732" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,732,67)">Q</text>
-            <text x="732" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(12,732,85)">♣</text>
-            <text x="765" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(12,765,125)">♣</text>
-            <text x="742" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,742,133)">Q</text>
             <circle cx="425" cy="250" r="18" stroke="#d4af37" stroke-width="1.2" fill="none" opacity="0.5"/>
             <circle cx="425" cy="250" r="6" fill="#d4af37" opacity="0.6"/>
             <path d="M400,250 L380,250 M450,250 L470,250 M425,225 L425,205 M425,275 L425,295" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.4"/>
         </svg>
     </div>
     
-    <!-- Модальное окно профиля -->
+    <!-- Модальные окна -->
     <div class="profile-modal" id="profileModal">
         <div class="profile-card">
             <div class="profile-header">
@@ -1484,7 +1486,6 @@
         </div>
     </div>
     
-    <!-- Модальное окно пополнения -->
     <div class="deposit-modal" id="depositModal">
         <div class="deposit-card">
             <div class="deposit-header">
@@ -1497,7 +1498,6 @@
                 <div class="rate-info">
                     📊 Курс: <strong>1 крона = 1.2 рубля</strong>
                 </div>
-                
                 <div class="deposit-input-group">
                     <label>💰 Сумма в кронах</label>
                     <div class="currency-input">
@@ -1505,32 +1505,21 @@
                         <input type="number" id="depositCoinsAmount" placeholder="Введите сумму" value="1000" min="1" step="100">
                     </div>
                 </div>
-                
                 <div class="preset-buttons">
                     <button class="preset-btn" onclick="setDepositPreset(500)">500 крон</button>
                     <button class="preset-btn" onclick="setDepositPreset(1000)">1000 крон</button>
                     <button class="preset-btn" onclick="setDepositPreset(5000)">5000 крон</button>
                     <button class="preset-btn" onclick="setDepositPreset(10000)">10000 крон</button>
                 </div>
-                
                 <div class="conversion-result">
                     <div class="label">💸 К ОПЛАТЕ (РУБЛИ)</div>
                     <div class="value" id="depositRubAmount">0 ₽</div>
                 </div>
-                
-                <button class="deposit-pay-btn" id="depositPayBtn" onclick="processDeposit()">
-                    💳 ОПЛАТИТЬ
-                </button>
-                
-                <div class="deposit-loading" id="depositLoading">
-                    <div class="spinner"></div>
-                    <span>Обработка платежа...</span>
-                </div>
+                <button class="deposit-pay-btn" id="depositPayBtn" onclick="processDeposit()">💳 ОПЛАТИТЬ</button>
             </div>
         </div>
     </div>
     
-    <!-- Модальное окно смены имени -->
     <div class="edit-name-modal" id="editNameModal">
         <div class="edit-name-card">
             <h3>Сменить имя</h3>
@@ -1556,9 +1545,9 @@
                 </select>
             </label>
             <input type="password" id="lobbyPassword" placeholder="Пароль (для приватного)" style="display: none;">
-            <div class="modal-buttons">
-                <button class="confirm-btn" onclick="createLobby()">Создать</button>
-                <button class="cancel-btn" onclick="closeCreateLobbyModal()">Отмена</button>
+            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 25px;">
+                <button class="confirm-btn" style="flex:1; background: linear-gradient(135deg, #d4af37, #b8860b); border: none; padding: 12px; border-radius: 40px; cursor: pointer; font-weight: bold;" onclick="createLobby()">Создать</button>
+                <button class="cancel-btn" style="flex:1; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); padding: 12px; border-radius: 40px; cursor: pointer;" onclick="closeCreateLobbyModal()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1567,9 +1556,9 @@
         <div class="modal-content">
             <h3>Вход в приватное лобби</h3>
             <input type="password" id="privateLobbyPassword" placeholder="Введите пароль">
-            <div class="modal-buttons">
-                <button class="confirm-btn" onclick="joinPrivateLobby()">Войти</button>
-                <button class="cancel-btn" onclick="closeJoinPrivateModal()">Отмена</button>
+            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 25px;">
+                <button class="confirm-btn" style="flex:1; background: linear-gradient(135deg, #d4af37, #b8860b); border: none; padding: 12px; border-radius: 40px; cursor: pointer; font-weight: bold;" onclick="joinPrivateLobby()">Войти</button>
+                <button class="cancel-btn" style="flex:1; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); padding: 12px; border-radius: 40px; cursor: pointer;" onclick="closeJoinPrivateModal()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1587,7 +1576,6 @@
         const MAX_LOBBIES = 5;
         const EXCHANGE_RATE = 1.2;
         
-        // ========== ФУНКЦИИ ПРОФИЛЯ ==========
         function openProfileModal() {
             updateProfileModalDisplay();
             document.getElementById('profileModal').classList.add('active');
@@ -1645,11 +1633,9 @@
             }, 3000);
         }
         
-        // ========== ФУНКЦИИ ПОПОЛНЕНИЯ ==========
         function openDepositModal() {
             closeProfileModal();
             const payBtn = document.getElementById('depositPayBtn');
-            const loadingDiv = document.getElementById('depositLoading');
             const coinsInput = document.getElementById('depositCoinsAmount');
             
             if (payBtn) {
@@ -1657,7 +1643,6 @@
                 payBtn.innerHTML = '💳 ОПЛАТИТЬ';
                 payBtn.style.opacity = '1';
             }
-            if (loadingDiv) loadingDiv.style.display = 'none';
             if (coinsInput) coinsInput.value = 1000;
             
             updateDepositConversion();
@@ -1666,16 +1651,6 @@
         
         function closeDepositModal() {
             const depositModal = document.getElementById('depositModal');
-            const payBtn = document.getElementById('depositPayBtn');
-            const loadingDiv = document.getElementById('depositLoading');
-            
-            if (payBtn) {
-                payBtn.disabled = false;
-                payBtn.innerHTML = '💳 ОПЛАТИТЬ';
-                payBtn.style.opacity = '1';
-            }
-            if (loadingDiv) loadingDiv.style.display = 'none';
-            
             if (depositModal) {
                 depositModal.classList.remove('active');
             }
@@ -1711,37 +1686,21 @@
             }
             
             const rubAmount = calculateRubles(coinsAmount);
-            
             const testMessage = `🧪 ТЕСТОВАЯ ФУНКЦИЯ\n\nСумма: ${coinsAmount.toLocaleString()} крон\nК оплате: ${rubAmount} ₽\n\nЭто тестовый режим. Деньги не будут списаны.\nБаланс будет пополнен автоматически.`;
             
             const confirmed = confirm(testMessage + '\n\nПродолжить?');
             if (!confirmed) return;
             
             const payBtn = document.getElementById('depositPayBtn');
-            const loadingDiv = document.getElementById('depositLoading');
-            const originalBtnText = payBtn.innerHTML;
-            
             payBtn.disabled = true;
-            payBtn.style.opacity = '0.5';
             payBtn.innerHTML = '⏳ ОБРАБОТКА...';
-            if (loadingDiv) loadingDiv.style.display = 'block';
             
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
                 const response = await fetch('/api/auth/add-coins', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUser, amount: coinsAmount }),
-                    signal: controller.signal
+                    body: JSON.stringify({ username: currentUser, amount: coinsAmount })
                 });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
                 
                 const data = await response.json();
                 
@@ -1759,29 +1718,16 @@
                 } else {
                     alert(data.error || 'Ошибка при пополнении');
                     payBtn.disabled = false;
-                    payBtn.style.opacity = '1';
-                    payBtn.innerHTML = originalBtnText;
-                    if (loadingDiv) loadingDiv.style.display = 'none';
+                    payBtn.innerHTML = '💳 ОПЛАТИТЬ';
                 }
             } catch (error) {
                 console.error('Ошибка при пополнении:', error);
-                
-                if (error.name === 'AbortError') {
-                    alert('❌ Превышено время ожидания (15 сек). Пожалуйста, проверьте соединение и попробуйте снова.');
-                } else if (error.message === 'Failed to fetch') {
-                    alert('❌ Ошибка соединения с сервером. Убедитесь, что сервер запущен.');
-                } else {
-                    alert('❌ Ошибка: ' + (error.message || 'Неизвестная ошибка'));
-                }
-                
+                alert('❌ Ошибка соединения с сервером');
                 payBtn.disabled = false;
-                payBtn.style.opacity = '1';
-                payBtn.innerHTML = originalBtnText;
-                if (loadingDiv) loadingDiv.style.display = 'none';
+                payBtn.innerHTML = '💳 ОПЛАТИТЬ';
             }
         }
         
-        // ========== ФУНКЦИИ СМЕНЫ ИМЕНИ ==========
         function openEditNameModal() {
             closeProfileModal();
             document.getElementById('editNameModal').classList.add('active');
@@ -1837,42 +1783,6 @@
             }
         }
         
-        document.getElementById('profileModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('profileModal')) {
-                closeProfileModal();
-            }
-        });
-        
-        document.getElementById('depositModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('depositModal')) {
-                closeDepositModal();
-            }
-        });
-        
-        document.getElementById('editNameModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('editNameModal')) {
-                closeEditNameModal();
-            }
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const depositModal = document.getElementById('depositModal');
-                if (depositModal && depositModal.classList.contains('active')) {
-                    closeDepositModal();
-                }
-                const profileModal = document.getElementById('profileModal');
-                if (profileModal && profileModal.classList.contains('active')) {
-                    closeProfileModal();
-                }
-                const editModal = document.getElementById('editNameModal');
-                if (editModal && editModal.classList.contains('active')) {
-                    closeEditNameModal();
-                }
-            }
-        });
-        
-        // ========== ФУНКЦИИ ЛОББИ И ЧАТА ==========
         function toggleLobbyStickerPanel() {
             const panel = document.getElementById('stickerPanelLobby');
             if (panel) panel.classList.toggle('active');
@@ -1896,7 +1806,7 @@
                     img.style.display = 'none';
                     const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
                     stickerDiv.textContent = emojis[i-1];
-                    stickerDiv.style.fontSize = '24px';
+                    stickerDiv.style.fontSize = '28px';
                     stickerDiv.style.display = 'flex';
                     stickerDiv.style.alignItems = 'center';
                     stickerDiv.style.justifyContent = 'center';
@@ -1948,16 +1858,17 @@
                 const img = document.createElement('img');
                 img.src = `/stickers/sticker (${stickerId}).png`;
                 img.alt = `Стикер ${stickerId}`;
-                img.style.width = '100%';
-                img.style.height = 'auto';
+                img.style.width = 'auto';
+                img.style.maxWidth = '60px';
+                img.style.maxHeight = '60px';
                 img.style.borderRadius = '10px';
                 img.onerror = () => {
                     img.style.display = 'none';
                     const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
                     bubbleDiv.textContent = emojis[stickerId - 1];
-                    bubbleDiv.style.fontSize = '32px';
+                    bubbleDiv.style.fontSize = '28px';
                     bubbleDiv.style.textAlign = 'center';
-                    bubbleDiv.style.padding = '8px';
+                    bubbleDiv.style.padding = '5px';
                 };
                 bubbleDiv.appendChild(img);
             } else {
@@ -2173,7 +2084,6 @@
         
         function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
         
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         async function init() {
             await loadUserData();
             connectSocket();
@@ -2184,6 +2094,7 @@
                     socket.emit('leaveLobby', {});
                 }
             });
+            
             const searchInput = document.getElementById('searchLobbyInput');
             if (searchInput) {
                 searchInput.addEventListener('input', () => {
@@ -2205,6 +2116,28 @@
             
             loadLobbyStickers();
             showLobbyChat(false);
+            
+            document.getElementById('profileModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('profileModal')) closeProfileModal();
+            });
+            document.getElementById('depositModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('depositModal')) closeDepositModal();
+            });
+            document.getElementById('editNameModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('editNameModal')) closeEditNameModal();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (document.getElementById('depositModal').classList.contains('active')) closeDepositModal();
+                    if (document.getElementById('profileModal').classList.contains('active')) closeProfileModal();
+                    if (document.getElementById('editNameModal').classList.contains('active')) closeEditNameModal();
+                }
+            });
+            
+            document.getElementById('isPrivateCheckbox').addEventListener('change', (e) => {
+                document.getElementById('lobbyPassword').style.display = e.target.checked ? 'block' : 'none';
+            });
         }
         
         async function loadUserData() {
@@ -2272,7 +2205,6 @@
                     showLobbyChat(true);
                 }
             });
-            
             socket.on('readyStatusUpdate', (data) => {
                 if (currentLobby) {
                     if (currentLobby.players) {
@@ -2283,7 +2215,6 @@
                     renderCurrentLobby(currentLobby);
                 }
             });
-            
             socket.on('gameStarted', (data) => {
                 sessionStorage.setItem('playerName', currentUser);
                 sessionStorage.setItem('currentLobbyId', data.lobbyId);
@@ -2332,50 +2263,13 @@
                 messagesDiv.appendChild(systemMsg);
                 
                 for (const msg of history) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `chat-message-lobby ${msg.username === currentUser ? 'own' : 'other'}`;
-                    
-                    const senderSpan = document.createElement('div');
-                    senderSpan.className = 'message-sender-lobby';
-                    senderSpan.textContent = msg.username === currentUser ? 'Вы' : msg.username;
-                    
-                    const bubbleDiv = document.createElement('div');
-                    
-                    if (msg.stickerId) {
-                        bubbleDiv.className = 'message-sticker-lobby';
-                        const img = document.createElement('img');
-                        img.src = `/stickers/sticker (${msg.stickerId}).png`;
-                        img.alt = `Стикер ${msg.stickerId}`;
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        img.style.borderRadius = '10px';
-                        img.onerror = () => {
-                            img.style.display = 'none';
-                            const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
-                            bubbleDiv.textContent = emojis[msg.stickerId - 1];
-                            bubbleDiv.style.fontSize = '32px';
-                            bubbleDiv.style.textAlign = 'center';
-                            bubbleDiv.style.padding = '8px';
-                        };
-                        bubbleDiv.appendChild(img);
-                    } else {
-                        bubbleDiv.className = 'message-bubble-lobby';
-                        bubbleDiv.textContent = msg.message;
-                    }
-                    
-                    messageDiv.appendChild(senderSpan);
-                    messageDiv.appendChild(bubbleDiv);
-                    messagesDiv.appendChild(messageDiv);
+                    addLobbyMessage(msg.username, msg.message, msg.stickerId, msg.stickerId);
                 }
                 
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             });
             refreshLobbies();
         }
-        
-        document.getElementById('isPrivateCheckbox').addEventListener('change', (e) => {
-            document.getElementById('lobbyPassword').style.display = e.target.checked ? 'block' : 'none';
-        });
         
         init();
     </script>

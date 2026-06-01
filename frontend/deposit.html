@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Пополнение баланса - Sultan</title>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -31,7 +31,7 @@
             width: 100%;
             height: 100%;
             background-image: radial-gradient(circle at 20% 40%, rgba(212, 175, 55, 0.06) 2px, transparent 2px);
-            background-size: 50px 50px;
+            background-size: clamp(30px, 8vw, 50px) clamp(30px, 8vw, 50px);
             pointer-events: none;
         }
         
@@ -44,7 +44,7 @@
         .deposit-card {
             background: rgba(10, 6, 4, 0.95);
             backdrop-filter: blur(12px);
-            border-radius: 40px;
+            border-radius: clamp(30px, 8vw, 40px);
             border: 2px solid #d4af37;
             box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
             overflow: hidden;
@@ -64,36 +64,36 @@
         
         .deposit-header {
             background: linear-gradient(135deg, #d4af37, #b8860b);
-            padding: 30px;
+            padding: clamp(20px, 6vw, 30px);
             text-align: center;
             position: relative;
         }
         
         .deposit-header h1 {
             color: #1a0f08;
-            font-size: 32px;
+            font-size: clamp(24px, 6vw, 32px);
             letter-spacing: 2px;
             margin-bottom: 5px;
         }
         
         .deposit-header p {
             color: #2a1a0a;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             opacity: 0.9;
         }
         
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: clamp(15px, 4vw, 20px);
+            right: clamp(15px, 4vw, 20px);
             background: rgba(26, 15, 8, 0.7);
             border: none;
             color: #fff;
-            width: 40px;
-            height: 40px;
+            width: clamp(36px, 8vw, 40px);
+            height: clamp(36px, 8vw, 40px);
             border-radius: 50%;
             cursor: pointer;
-            font-size: 24px;
+            font-size: clamp(20px, 5vw, 24px);
             transition: all 0.2s;
             display: flex;
             align-items: center;
@@ -107,25 +107,25 @@
         
         .test-badge {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: clamp(15px, 4vw, 20px);
+            left: clamp(15px, 4vw, 20px);
             background: rgba(255, 193, 7, 0.9);
             color: #1a0f08;
             padding: 5px 12px;
             border-radius: 30px;
-            font-size: 11px;
+            font-size: clamp(10px, 2.5vw, 11px);
             font-weight: bold;
             letter-spacing: 1px;
         }
         
         .deposit-body {
-            padding: 35px;
+            padding: clamp(25px, 6vw, 35px);
         }
         
         .balance-info {
             background: linear-gradient(135deg, #2a1f12, #1a1208);
             border-radius: 20px;
-            padding: 20px;
+            padding: clamp(15px, 4vw, 20px);
             margin-bottom: 30px;
             text-align: center;
             border: 1px solid rgba(212, 175, 55, 0.3);
@@ -133,33 +133,33 @@
         
         .balance-label {
             color: #c9af7b;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             letter-spacing: 1px;
             margin-bottom: 8px;
         }
         
         .balance-amount {
             color: #d4af37;
-            font-size: 42px;
+            font-size: clamp(32px, 8vw, 42px);
             font-weight: bold;
             font-family: 'Playfair Display', serif;
         }
         
         .balance-amount span {
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
         }
         
         .converter-box {
             background: rgba(30, 20, 12, 0.6);
             border-radius: 20px;
-            padding: 25px;
+            padding: clamp(20px, 5vw, 25px);
             margin-bottom: 30px;
             border: 1px solid rgba(212, 175, 55, 0.2);
         }
         
         .converter-title {
             color: #d4af37;
-            font-size: 16px;
+            font-size: clamp(14px, 3.5vw, 16px);
             margin-bottom: 20px;
             text-align: center;
             letter-spacing: 1px;
@@ -171,13 +171,13 @@
             padding: 12px;
             margin-bottom: 25px;
             text-align: center;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             color: #c9af7b;
         }
         
         .rate-info strong {
             color: #d4af37;
-            font-size: 18px;
+            font-size: clamp(14px, 3.5vw, 18px);
         }
         
         .input-group {
@@ -186,7 +186,7 @@
         
         .input-label {
             color: #c9af7b;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             margin-bottom: 8px;
             display: block;
         }
@@ -199,12 +199,12 @@
         
         .currency-input input {
             width: 100%;
-            padding: 16px 16px 16px 50px;
+            padding: clamp(14px, 4vw, 16px) clamp(14px, 4vw, 16px) clamp(14px, 4vw, 16px) clamp(40px, 10vw, 50px);
             background: rgba(30, 20, 12, 0.9);
             border: 1.5px solid #997a00;
             border-radius: 50px;
             color: #faf4e0;
-            font-size: 18px;
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: bold;
             transition: all 0.3s;
         }
@@ -218,9 +218,37 @@
         .currency-symbol {
             position: absolute;
             left: 18px;
-            font-size: 20px;
+            font-size: clamp(18px, 4.5vw, 20px);
             color: #d4af37;
             font-weight: bold;
+        }
+        
+        .preset-buttons {
+            display: flex;
+            gap: clamp(8px, 2vw, 12px);
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .preset-btn {
+            flex: 1;
+            min-width: 70px;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            padding: clamp(8px, 2vw, 10px);
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Oswald', sans-serif;
+            font-weight: bold;
+            font-size: clamp(11px, 2.5vw, 13px);
+        }
+        
+        .preset-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+            transform: scale(1.02);
         }
         
         .conversion-result {
@@ -233,50 +261,24 @@
         
         .conversion-result .label {
             color: #aa9977;
-            font-size: 12px;
+            font-size: clamp(11px, 2.5vw, 12px);
             margin-bottom: 5px;
         }
         
         .conversion-result .value {
             color: #d4af37;
-            font-size: 24px;
+            font-size: clamp(20px, 5vw, 24px);
             font-weight: bold;
-        }
-        
-        .preset-buttons {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        
-        .preset-btn {
-            flex: 1;
-            background: rgba(212, 175, 55, 0.15);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            color: #d4af37;
-            padding: 10px;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Oswald', sans-serif;
-            font-weight: bold;
-        }
-        
-        .preset-btn:hover {
-            background: rgba(212, 175, 55, 0.3);
-            border-color: #d4af37;
-            transform: scale(1.02);
         }
         
         .pay-btn {
             width: 100%;
-            padding: 18px;
+            padding: clamp(14px, 4vw, 18px);
             background: linear-gradient(135deg, #4caf50, #2e7d32);
             border: none;
             border-radius: 50px;
             color: white;
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -301,7 +303,7 @@
             margin-top: 20px;
             color: #c9af7b;
             text-decoration: none;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             transition: all 0.2s;
         }
         
@@ -316,7 +318,7 @@
             padding: 12px;
             margin-top: 15px;
             color: #ff8888;
-            font-size: 13px;
+            font-size: clamp(11px, 2.5vw, 13px);
             text-align: center;
             display: none;
         }
@@ -334,19 +336,36 @@
         
         @media (max-width: 500px) {
             .deposit-body {
-                padding: 25px;
+                padding: 20px;
             }
             .balance-amount {
-                font-size: 32px;
+                font-size: 28px;
+            }
+            .preset-buttons {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             .preset-btn {
-                font-size: 12px;
-                padding: 8px;
+                min-width: auto;
             }
-            .pay-btn {
-                font-size: 16px;
-                padding: 14px;
+        }
+        
+        @media (max-width: 380px) {
+            .deposit-header {
+                padding: 15px;
             }
+            .deposit-header h1 {
+                font-size: 22px;
+            }
+            .test-badge {
+                font-size: 9px;
+                padding: 3px 8px;
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -408,7 +427,7 @@
     <script>
         let currentUser = null;
         let currentBalance = 0;
-        const EXCHANGE_RATE = 1.2; // 1 крона = 1.2 рубля
+        const EXCHANGE_RATE = 1.2;
         
         async function loadUserData() {
             try {
@@ -468,20 +487,16 @@
             
             const rubAmount = calculateRubles(coinsAmount);
             
-            // Тестовое сообщение
             const testMessage = `🧪 ТЕСТОВАЯ ФУНКЦИЯ\n\nСумма: ${coinsAmount.toLocaleString()} крон\nК оплате: ${rubAmount} ₽\n\nЭто тестовый режим. Деньги не будут списаны.\nБаланс будет пополнен автоматически.`;
             
             const confirmed = confirm(testMessage + '\n\nПродолжить?');
-            
             if (!confirmed) return;
             
-            // Блокируем кнопку
             const payBtn = document.querySelector('.pay-btn');
             payBtn.disabled = true;
             payBtn.textContent = '⏳ ОБРАБОТКА...';
             
             try {
-                // Отправляем запрос на пополнение
                 const response = await fetch('/api/auth/add-coins', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -493,14 +508,11 @@
                 if (data.success) {
                     currentBalance = data.coins;
                     
-                    // Показываем сообщение об успехе
                     alert(`✅ Пополнение выполнено!\n\n➕ Добавлено: ${coinsAmount.toLocaleString()} крон\n💰 Новый баланс: ${currentBalance.toLocaleString()} крон\n💸 Сумма к оплате: ${rubAmount} ₽\n\n(Это тестовый режим, деньги не списаны)`);
                     
-                    // Сохраняем в sessionStorage что баланс обновлен
                     sessionStorage.setItem('balanceUpdated', 'true');
                     sessionStorage.setItem('newBalance', currentBalance);
                     
-                    // Перенаправляем в профиль
                     window.location.href = '/lobby.html?highlight=profile';
                 } else {
                     showError(data.error || 'Ошибка при пополнении');
@@ -519,7 +531,6 @@
             window.location.href = '/lobby.html';
         }
         
-        // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             loadUserData();
             

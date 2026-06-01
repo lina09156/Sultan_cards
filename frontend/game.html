@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Sultan Cards</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -92,19 +92,23 @@
         }
         
         .message-sticker {
-            max-width: 100px;
+            max-width: 60px;
+            width: 60px;
             cursor: pointer;
             transition: transform 0.2s;
-        }
-        
-        .message-sticker:hover {
-            transform: scale(1.05);
         }
         
         .message-sticker img {
             width: 100%;
             height: auto;
             border-radius: 10px;
+            max-width: 60px;
+            max-height: 60px;
+            object-fit: contain;
+        }
+        
+        .message-sticker:hover {
+            transform: scale(1.05);
         }
         
         .chat-input-area {
@@ -180,11 +184,15 @@
         }
         
         .sticker-option {
-            width: 60px;
+            width: 55px;
+            height: 55px;
             cursor: pointer;
             transition: transform 0.2s;
             border-radius: 10px;
             padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .sticker-option:hover {
@@ -194,7 +202,9 @@
         
         .sticker-option img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
         }
         
         .chat-messages::-webkit-scrollbar {
@@ -221,6 +231,7 @@
             }
         }
         
+        /* Стили для speech bubble */
         .speech-bubble {
             position: absolute;
             background: white;
@@ -236,6 +247,7 @@
             border: 2px solid #d4af37;
         }
         
+        /* Стрелка для пузыря снизу (стандартная) */
         .speech-bubble::after {
             content: '';
             position: absolute;
@@ -246,14 +258,43 @@
             border-color: white transparent transparent transparent;
         }
         
+        /* Стрелка для пузыря слева (для верхнего игрока) */
+        .speech-bubble[data-arrow="left"]::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            border-width: 10px 10px 10px 0;
+            border-style: solid;
+            border-color: transparent white transparent transparent;
+            bottom: auto;
+            right: auto;
+        }
+        
+        /* Стрелка для пузыря сверху (для бокового игрока) */
+        .speech-bubble[data-arrow="top"]::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px 10px;
+            border-style: solid;
+            border-color: transparent transparent white transparent;
+            bottom: auto;
+        }
+        
         .speech-bubble.sticker-bubble {
             padding: 5px;
             background: transparent;
             border: none;
+            max-width: 70px;
         }
         
         .speech-bubble.sticker-bubble img {
-            max-width: 80px;
+            max-width: 60px;
+            max-height: 60px;
             border-radius: 15px;
         }
         
@@ -272,17 +313,82 @@
             position: relative;
         }
         
-        @media (max-width: 700px) {
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
             .chat-container {
-                width: 280px;
-                bottom: 100px;
+                width: calc(100% - 20px);
                 left: 10px;
+                right: 10px;
+                bottom: 80px;
+                max-width: none;
             }
+            
             .chat-messages {
-                height: 250px;
+                height: 200px;
             }
+            
             .message-sticker {
-                max-width: 80px;
+                max-width: 45px;
+                width: 45px;
+            }
+            
+            .message-sticker img {
+                max-width: 45px;
+                max-height: 45px;
+            }
+            
+            .sticker-option {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .speech-bubble {
+                max-width: 120px;
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            
+            .speech-bubble.sticker-bubble {
+                max-width: 55px;
+            }
+            
+            .speech-bubble.sticker-bubble img {
+                max-width: 45px;
+                max-height: 45px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chat-input-area {
+                padding: 8px;
+                gap: 6px;
+            }
+            
+            .chat-input {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+            
+            .chat-send-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .sticker-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            
+            .sticker-option {
+                width: 40px;
+                height: 40px;
+            }
+        }
+        
+        @media (max-width: 900px) and (orientation: landscape) {
+            .chat-container {
+                display: none;
             }
         }
     </style>
@@ -346,46 +452,43 @@
         let currentPlayerName = null;
         let currentChatSocket = null;
         
-        // Проверяем, есть ли lobbyId в URL
         const urlParams = new URLSearchParams(window.location.search);
         const lobbyId = urlParams.get('lobbyId');
         
         if (!lobbyId) {
-            // Если нет в URL, проверяем sessionStorage
             const savedLobbyId = sessionStorage.getItem('currentLobbyId');
             if (savedLobbyId) {
-                // Добавляем lobbyId в URL
                 window.location.href = `/game.html?lobbyId=${savedLobbyId}`;
             }
         }
         
         window.playerName = sessionStorage.getItem('playerName');
         
-        // Функции чата
         function toggleChat() {
             const messages = document.getElementById('chatMessages');
             const inputArea = document.querySelector('.chat-input-area');
             const stickerPanel = document.getElementById('stickerPanel');
             
             if (!chatCollapsed) {
-                messages.style.display = 'none';
-                inputArea.style.display = 'none';
-                stickerPanel.classList.remove('active');
+                if (messages) messages.style.display = 'none';
+                if (inputArea) inputArea.style.display = 'none';
+                if (stickerPanel) stickerPanel.classList.remove('active');
                 chatCollapsed = true;
             } else {
-                messages.style.display = 'flex';
-                inputArea.style.display = 'flex';
+                if (messages) messages.style.display = 'flex';
+                if (inputArea) inputArea.style.display = 'flex';
                 chatCollapsed = false;
             }
         }
         
         function toggleStickerPanel() {
             const panel = document.getElementById('stickerPanel');
-            panel.classList.toggle('active');
+            if (panel) panel.classList.toggle('active');
         }
         
         function loadStickers() {
             const panel = document.getElementById('stickerPanel');
+            if (!panel) return;
             panel.innerHTML = '';
             for (let i = 1; i <= 8; i++) {
                 const stickerDiv = document.createElement('div');
@@ -394,13 +497,18 @@
                 const img = document.createElement('img');
                 img.src = `/stickers/sticker (${i}).png`;
                 img.alt = `Стикер ${i}`;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.style.borderRadius = '8px';
                 img.onerror = () => {
-                    // Заглушка только если файл не найден
                     img.style.display = 'none';
                     const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
                     stickerDiv.textContent = emojis[i-1];
-                    stickerDiv.style.fontSize = '32px';
-                    stickerDiv.style.textAlign = 'center';
+                    stickerDiv.style.fontSize = '28px';
+                    stickerDiv.style.display = 'flex';
+                    stickerDiv.style.alignItems = 'center';
+                    stickerDiv.style.justifyContent = 'center';
                 };
                 stickerDiv.appendChild(img);
                 panel.appendChild(stickerDiv);
@@ -410,8 +518,6 @@
         function sendSticker(stickerId) {
             const currentLobbyId = sessionStorage.getItem('currentLobbyId') || lobbyId;
             
-            console.log('📤 Отправка стикера в игру:', stickerId, 'игрок:', currentPlayerName, 'лобби:', currentLobbyId);
-            
             if (currentChatSocket && currentPlayerName && currentLobbyId) {
                 currentChatSocket.emit('chatSticker', {
                     username: currentPlayerName,
@@ -419,12 +525,6 @@
                     lobbyId: currentLobbyId
                 });
                 toggleStickerPanel();
-            } else {
-                console.error('Не удалось отправить стикер:', { 
-                    socket: !!currentChatSocket, 
-                    playerName: currentPlayerName, 
-                    lobbyId: currentLobbyId
-                });
             }
         }
 
@@ -433,8 +533,6 @@
             const message = input.value.trim();
             const currentLobbyId = sessionStorage.getItem('currentLobbyId') || lobbyId;
             
-            console.log('📤 Отправка сообщения в игру:', message, 'игрок:', currentPlayerName, 'лобби:', currentLobbyId);
-            
             if (message && currentChatSocket && currentPlayerName && currentLobbyId) {
                 currentChatSocket.emit('chatMessage', {
                     username: currentPlayerName,
@@ -442,18 +540,13 @@
                     lobbyId: currentLobbyId
                 });
                 input.value = '';
-            } else {
-                console.error('Не удалось отправить сообщение:', {
-                    message: !!message,
-                    socket: !!currentChatSocket, 
-                    playerName: currentPlayerName, 
-                    lobbyId: currentLobbyId
-                });
             }
         }
         
         function addMessageToChat(username, message, isSticker = false, stickerId = null) {
             const messagesDiv = document.getElementById('chatMessages');
+            if (!messagesDiv) return;
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `chat-message ${username === currentPlayerName ? 'own' : 'other'}`;
             
@@ -468,11 +561,17 @@
                 const img = document.createElement('img');
                 img.src = `/stickers/sticker (${stickerId}).png`;
                 img.alt = `Стикер ${stickerId}`;
+                img.style.width = 'auto';
+                img.style.maxWidth = '60px';
+                img.style.maxHeight = '60px';
+                img.style.borderRadius = '10px';
                 img.onerror = () => {
                     const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
                     img.style.display = 'none';
                     bubbleDiv.textContent = emojis[stickerId - 1];
-                    bubbleDiv.style.fontSize = '32px';
+                    bubbleDiv.style.fontSize = '28px';
+                    bubbleDiv.style.textAlign = 'center';
+                    bubbleDiv.style.padding = '5px';
                 };
                 bubbleDiv.appendChild(img);
             } else {
@@ -512,23 +611,53 @@
                 const img = document.createElement('img');
                 img.src = `/stickers/sticker (${stickerId}).png`;
                 img.alt = `Стикер ${stickerId}`;
+                img.style.width = 'auto';
+                img.style.maxWidth = '60px';
+                img.style.maxHeight = '60px';
+                img.style.borderRadius = '10px';
                 img.onerror = () => {
                     const emojis = ['😀', '😂', '😎', '🥳', '🔥', '🎴', '👑', '💎'];
                     bubble.textContent = emojis[stickerId - 1];
-                    bubble.style.fontSize = '32px';
-                    bubble.style.padding = '5px 15px';
+                    bubble.style.fontSize = '28px';
+                    bubble.style.padding = '8px 15px';
+                    bubble.style.background = 'white';
+                    bubble.style.borderRadius = '20px';
                 };
                 bubble.appendChild(img);
             } else {
                 bubble.textContent = message.length > 30 ? message.substring(0, 27) + '...' : message;
             }
             
-            let top = rect.top - 60;
-            let left = rect.left + rect.width / 2 - 50;
+            // Определяем позицию игрока и устанавливаем направление стрелки
+            const isTopPlayer = playerElement.classList.contains('player-top');
+            const isRightPlayer = playerElement.classList.contains('player-right');
+            
+            let top, left;
+            
+            if (isTopPlayer) {
+                // Верхний игрок - пузырь СПРАВА от ника
+                top = rect.top + rect.height / 2 - 30;
+                left = rect.right + 10;
+                bubble.setAttribute('data-arrow', 'left');
+            } 
+            else if (isRightPlayer) {
+                // Правый/боковой игрок - пузырь СВЕРХУ
+                top = rect.top - 70;
+                left = rect.left + rect.width / 2 - 35;
+                bubble.setAttribute('data-arrow', 'top');
+            }
+            else {
+                // Нижний игрок - пузырь СВЕРХУ (стандарт)
+                top = rect.top - 70;
+                left = rect.left + rect.width / 2 - 35;
+                // стандартная стрелка снизу (не нужно добавлять атрибут)
+            }
             
             bubble.style.position = 'fixed';
             bubble.style.top = `${top}px`;
             bubble.style.left = `${left}px`;
+            bubble.style.zIndex = '300';
+            bubble.style.animation = 'bubblePop 0.3s ease';
             
             document.body.appendChild(bubble);
             
@@ -538,7 +667,7 @@
                     bubble.style.transition = 'opacity 0.3s';
                     setTimeout(() => bubble.remove(), 300);
                 }
-            }, 4000);
+            }, 3500);
         }
         
         function exitGame() {
@@ -575,9 +704,17 @@
             if (input) {
                 input.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
+                        e.preventDefault();
                         sendChatMessage();
                     }
                 });
+            }
+            
+            if ('ontouchstart' in window) {
+                const chatContainer = document.getElementById('chatContainer');
+                if (chatContainer) {
+                    chatContainer.style.transform = 'translateZ(0)';
+                }
             }
         });
         
