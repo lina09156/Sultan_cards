@@ -8,6 +8,7 @@
     "dev": "nodemon backend/server.js"
   },
   "dependencies": {
+    "@vkontakte/vk-bridge": "^3.0.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "express": "^4.18.2",

@@ -6,13 +6,33 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        trim: true,
-        minlength: 3,
-        maxlength: 12
+        trim: true
     },
     password: {
         type: String,
         required: true
+    },
+    // VK специфичные поля
+    vkId: {
+        type: String,
+        sparse: true,
+        index: true
+    },
+    vkFirstName: {
+        type: String,
+        default: ''
+    },
+    vkLastName: {
+        type: String,
+        default: ''
+    },
+    vkPhoto: {
+        type: String,
+        default: ''
+    },
+    isVkUser: {
+        type: Boolean,
+        default: false
     },
     wins: {
         type: Number,
@@ -45,16 +65,17 @@ const userSchema = new mongoose.Schema({
 });
 
 // Хеширование пароля перед сохранением
-userSchema.pre('save', async function() {
+userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        return;
+        return next();
     }
     
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
+        next();
     } catch (error) {
-        throw error;
+        next(error);
     }
 });
 
