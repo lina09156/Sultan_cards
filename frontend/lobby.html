@@ -180,7 +180,7 @@
         .edit-name-card, .modal-content {
             background: linear-gradient(145deg, #1a0f08, #0a0604);
             border-radius: 40px;
-            width: min(90%, 380px);
+            width: min(90%, 400px);
             max-width: 90%;
             border: 2px solid #d4af37;
             box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
@@ -1083,16 +1083,21 @@
             position: relative;
             z-index: 2;
             width: 100%;
+            text-align: center;
+            overflow-x: visible;
         }
         
         .cards-svg {
             display: block;
             margin: 0 auto;
-            width: min(900px, 95vw);
+            width: min(900px, 90vw);
             height: auto;
             filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.5));
             opacity: 0.85;
             transition: all 0.3s ease;
+            position: relative;
+            left: 0;
+            transform: translateX(6%);
         }
         
         .cards-svg:hover {
@@ -1143,6 +1148,105 @@
         ::-webkit-scrollbar-thumb {
             background: #d4af37;
             border-radius: 4px;
+        }
+        
+        /* Модальное окно создания лобби - исправленные стили */
+        .modal-content {
+            background: linear-gradient(145deg, #1a0f08, #0a0604);
+            border-radius: 40px;
+            width: min(90%, 420px);
+            max-width: 90%;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+            animation: modalSlideIn 0.3s ease;
+            padding: 30px;
+        }
+        
+        .modal-content h3 {
+            color: #ffffff;
+            margin-bottom: 25px;
+            font-size: 24px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .modal-content input[type="text"],
+        .modal-content input[type="password"],
+        .modal-content select {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 10px 0;
+            background: rgba(30, 20, 12, 0.9);
+            border: 1.5px solid #997a00;
+            border-radius: 40px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        .modal-content input:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        
+        .modal-content label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 15px 0;
+            color: #ffffff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .modal-content label input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .modal-content .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-content .confirm-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            color: #1a0f08;
+            font-family: 'Oswald', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .modal-content .confirm-btn:hover {
+            background: linear-gradient(135deg, #e8c547, #cc9a1a);
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+        
+        .modal-content .cancel-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .modal-content .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #d4af37;
         }
         
         /* Медиа-запросы */
@@ -1223,7 +1327,8 @@
             }
             
             .cards-svg {
-                width: 100%;
+                width: 95vw;
+                transform: translateX(3%);
             }
             
             .stats-grid {
@@ -1270,6 +1375,20 @@
             .sticker-option-lobby {
                 width: 45px;
                 height: 45px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-content h3 {
+                font-size: 20px;
+            }
+            
+            .modal-content .confirm-btn,
+            .modal-content .cancel-btn {
+                padding: 10px;
+                font-size: 14px;
             }
         }
         
@@ -1325,6 +1444,10 @@
             .currency-symbol {
                 font-size: 16px;
                 left: 14px;
+            }
+            
+            .cards-svg {
+                transform: translateX(2%);
             }
         }
         
@@ -1414,34 +1537,57 @@
         </div>
     </div>
     
-    <!-- SVG карты по центру -->
+    <!-- SVG карты -->
     <div class="cards-footer">
         <svg class="cards-svg" viewBox="0 0 850 300" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6"/>
             <text x="32" y="72" fill="#d4af37" font-size="16" font-family="Georgia" font-weight="bold" opacity="0.8">A</text>
             <text x="32" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8">♥</text>
-            <text x="65" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8">♥</text>
             <text x="42" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">A</text>
+            <text x="42" y="150" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">♥</text>
+            
             <rect x="110" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-10,152,100)"/>
             <text x="130" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-10,130,72)">K</text>
             <text x="130" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-10,130,90)">♠</text>
-            <text x="165" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-10,165,130)">♠</text>
             <text x="142" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-10,142,138)">K</text>
+            <text x="142" y="150" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-10,142,150)">♠</text>
+            
             <rect x="210" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(5,252,100)"/>
             <text x="232" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(5,232,72)">Q</text>
             <text x="232" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(5,232,90)">♦</text>
-            <text x="265" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(5,265,130)">♦</text>
             <text x="242" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(5,242,138)">Q</text>
+            <text x="242" y="150" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(5,242,150)">♦</text>
+            
             <rect x="310" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7"/>
             <text x="332" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">J</text>
             <text x="332" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8">♣</text>
-            <text x="365" y="125" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8">♣</text>
             <text x="342" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">J</text>
+            <text x="342" y="145" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8">♣</text>
+            
             <rect x="410" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-5,452,100)"/>
             <text x="430" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,430,72)">10</text>
             <text x="430" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-5,430,90)">♥</text>
-            <text x="465" y="130" fill="#d4af37" font-size="24" font-family="Georgia" opacity="0.8" transform="rotate(-5,465,130)">♥</text>
             <text x="442" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,442,138)">10</text>
+            <text x="442" y="150" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-5,442,150)">♥</text>
+            
+            <rect x="510" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(8,552,95)"/>
+            <text x="532" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,532,67)">K</text>
+            <text x="532" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(8,532,85)">♦</text>
+            <text x="542" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,542,133)">K</text>
+            <text x="542" y="145" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(8,542,145)">♦</text>
+            
+            <rect x="610" y="40" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.6" transform="rotate(-3,652,100)"/>
+            <text x="630" y="72" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,72)">A</text>
+            <text x="630" y="90" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(-3,630,90)">♠</text>
+            <text x="642" y="138" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,642,138)">A</text>
+            <text x="642" y="150" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(-3,642,150)">♠</text>
+            
+            <rect x="710" y="35" width="85" height="120" rx="10" stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7" transform="rotate(12,752,95)"/>
+            <text x="732" y="67" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,732,67)">Q</text>
+            <text x="732" y="85" fill="#d4af37" font-size="18" font-family="Georgia" opacity="0.8" transform="rotate(12,732,85)">♣</text>
+            <text x="742" y="133" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,742,133)">Q</text>
+            <text x="742" y="145" fill="#d4af37" font-size="16" font-family="Georgia" opacity="0.8" transform="rotate(12,742,145)">♣</text>
+            
             <circle cx="425" cy="250" r="18" stroke="#d4af37" stroke-width="1.2" fill="none" opacity="0.5"/>
             <circle cx="425" cy="250" r="6" fill="#d4af37" opacity="0.6"/>
             <path d="M400,250 L380,250 M450,250 L470,250 M425,225 L425,205 M425,275 L425,295" stroke="#d4af37" stroke-width="0.8" fill="none" opacity="0.4"/>
@@ -1538,16 +1684,17 @@
             <label>
                 <input type="checkbox" id="isPrivateCheckbox"> Приватное лобби
             </label>
-            <label style="margin-top: 10px; display: block;">👥 Режим игры:
-                <select id="lobbyMaxPlayers" style="margin-left: 10px; background: rgba(30,20,12,0.9); border: 1px solid #d4af37; color: #faf4e0; padding: 5px 10px; border-radius: 20px;">
+            <label style="margin-top: 10px; display: flex; align-items: center; gap: 12px; color: #ffffff;">
+                👥 Режим игры:
+                <select id="lobbyMaxPlayers" style="margin-left: auto; background: rgba(30,20,12,0.9); border: 1px solid #d4af37; color: #ffffff; padding: 8px 12px; border-radius: 20px; width: auto; flex: 1;">
                     <option value="2">2 игрока (6 карт, до 5 побед)</option>
                     <option value="3" selected>3 игрока (12 карт, до 3 побед)</option>
                 </select>
             </label>
             <input type="password" id="lobbyPassword" placeholder="Пароль (для приватного)" style="display: none;">
-            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 25px;">
-                <button class="confirm-btn" style="flex:1; background: linear-gradient(135deg, #d4af37, #b8860b); border: none; padding: 12px; border-radius: 40px; cursor: pointer; font-weight: bold;" onclick="createLobby()">Создать</button>
-                <button class="cancel-btn" style="flex:1; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); padding: 12px; border-radius: 40px; cursor: pointer;" onclick="closeCreateLobbyModal()">Отмена</button>
+            <div class="modal-buttons">
+                <button class="confirm-btn" onclick="createLobby()">Создать</button>
+                <button class="cancel-btn" onclick="closeCreateLobbyModal()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1556,9 +1703,9 @@
         <div class="modal-content">
             <h3>Вход в приватное лобби</h3>
             <input type="password" id="privateLobbyPassword" placeholder="Введите пароль">
-            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 25px;">
-                <button class="confirm-btn" style="flex:1; background: linear-gradient(135deg, #d4af37, #b8860b); border: none; padding: 12px; border-radius: 40px; cursor: pointer; font-weight: bold;" onclick="joinPrivateLobby()">Войти</button>
-                <button class="cancel-btn" style="flex:1; background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); padding: 12px; border-radius: 40px; cursor: pointer;" onclick="closeJoinPrivateModal()">Отмена</button>
+            <div class="modal-buttons">
+                <button class="confirm-btn" onclick="joinPrivateLobby()">Войти</button>
+                <button class="cancel-btn" onclick="closeJoinPrivateModal()">Отмена</button>
             </div>
         </div>
     </div>
