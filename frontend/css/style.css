@@ -360,6 +360,7 @@ body::before {
     right: 8px;
     font-size: 18px;
     transform: rotate(180deg);
+    display: none;
 }
 
 .card-suit:last-of-type {
@@ -368,6 +369,7 @@ body::before {
     right: 30px;
     font-size: 18px;
     transform: rotate(180deg);
+    display: none;
 }
 
 .card .card-value:not(:first-child):not(:last-child) {
@@ -383,6 +385,7 @@ body::before {
     transform: none;
 }
 
+/* ПАНЕЛЬ С КАРТАМИ - ДОБАВЛЕНА ЖЁЛТАЯ ОБВОДКА, ВСЁ ОСТАЛЬНОЕ ОСТАЛОСЬ КАК БЫЛО */
 .my-area {
     grid-column: 1 / 4;
     grid-row: 3;
@@ -390,8 +393,16 @@ body::before {
     justify-content: center;
     align-items: flex-end;
     padding: 15px clamp(15px, 3vw, 30px) 20px clamp(15px, 3vw, 30px);
-    background: linear-gradient(135deg, #1a5c3a, #0e3a22);
+    background-image: 
+        url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 150' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='goldGrad' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23b8860b'/%3E%3Cstop offset='25%25' stop-color='%23d4af37'/%3E%3Cstop offset='50%25' stop-color='%23ffe68f'/%3E%3Cstop offset='75%25' stop-color='%23ffd700'/%3E%3Cstop offset='100%25' stop-color='%23e6b422'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Утолщенное тело змеи без швов и пересечений --%3E%3Cpath d='M 10,95 C 100,90 150,35 250,35 C 350,35 400,95 500,95 C 600,95 650,35 750,35 C 850,35 900,80 940,80 C 960,80 980,70 990,80 C 996,86 992,102 975,102 C 960,102 945,100 940,100 C 900,100 850,75 750,75 C 650,75 600,135 500,135 C 400,135 350,75 250,75 C 150,75 100,105 10,95 Z' fill='url(%23goldGrad)'/%3E%3C!-- Все декоративные элементы отцентрованы под новую толщину --%3E%3Ccircle cx='250' cy='55' r='18' fill='none' stroke='%230e3a22' stroke-width='2' opacity='0.7' stroke-dasharray='4,2'/%3E%3Ccircle cx='500' cy='115' r='18' fill='none' stroke='%230e3a22' stroke-width='2' opacity='0.7' stroke-dasharray='4,2'/%3E%3Ccircle cx='750' cy='55' r='18' fill='none' stroke='%230e3a22' stroke-width='2' opacity='0.7' stroke-dasharray='4,2'/%3E%3C!-- Пятна --%3E%3Ccircle cx='120' cy='85' r='5' fill='%230e3a22' opacity='0.8'/%3E%3Ccircle cx='375' cy='85' r='6' fill='%230e3a22' opacity='0.8'/%3E%3Ccircle cx='625' cy='85' r='6' fill='%230e3a22' opacity='0.8'/%3E%3Ccircle cx='870' cy='70' r='5' fill='%230e3a22' opacity='0.8'/%3E%3C!-- Ребра у головы --%3E%3Cline x1='915' y1='70' x2='915' y2='95' stroke='%230e3a22' stroke-width='2' opacity='0.8'/%3E%3Cline x1='925' y1='72' x2='925' y2='97' stroke='%230e3a22' stroke-width='2' opacity='0.8'/%3E%3Cline x1='935' y1='74' x2='935' y2='98' stroke='%230e3a22' stroke-width='2' opacity='0.8'/%3E%3C!-- Глаз --%3E%3Ccircle cx='975' cy='90' r='1.5' fill='%230e3a22'/%3E%3C/svg%3E"),
+        linear-gradient(135deg, #1a5c3a, #0e3a22) !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-size: 100% 100% !important;
     border-top: 3px solid #e6b422;
+    border-left: 3px solid #e6b422;
+    border-right: 3px solid #e6b422;
+    border-bottom: 3px solid #e6b422;
     border-radius: 30px 30px 0 0;
     margin-top: auto;
     min-height: 200px;
@@ -858,7 +869,6 @@ body::before {
         grid-row: 4;
         min-height: 140px;
         padding: 10px 8px 15px 8px;
-        border-radius: 20px 20px 0 0;
     }
     .hand {
         gap: -18px;

@@ -25,8 +25,14 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ============ СТАТИЧЕСКИЕ ФАЙЛЫ ============
+// Статика для фронтенда
 app.use(express.static(path.join(__dirname, '../frontend')));
-app.use('/stickers', express.static(path.join(__dirname, '../public')));
+// Статика для публичных файлов (картинки, стикеры)
+app.use(express.static(path.join(__dirname, '../public')));
+// Отдельный маршрут для стикеров (для надёжности)
+app.use('/stickers', express.static(path.join(__dirname, '../public/stickers')));
 
 // Сессии для авторизации
 app.use(session({
@@ -65,11 +71,23 @@ app.get('/lobby', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/lobby.html'));
 });
 
+app.get('/lobby.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/lobby.html'));
+});
+
 app.get('/deposit', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/deposit.html'));
 });
 
+app.get('/deposit.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/deposit.html'));
+});
+
 app.get('/game', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/game.html'));
+});
+
+app.get('/game.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/game.html'));
 });
 
@@ -80,12 +98,18 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
     console.log(`📱 Режим: Гибридный (VK + Автономный)`);
+    console.log(`📁 Статика подключена:`);
+    console.log(`   - frontend: ${path.join(__dirname, '../frontend')}`);
+    console.log(`   - public: ${path.join(__dirname, '../public')}`);
+    console.log(`   - stickers: ${path.join(__dirname, '../public/stickers')}`);
     if (mongoose.connection.readyState === 1) {
         console.log('📊 MongoDB статус: Подключена');
     } else {
         console.log('📊 MongoDB статус: Не подключена (используется временное хранилище)');
     }
     console.log('🎮 Откройте браузер и перейдите на http://localhost:3000');
+    console.log('🃏 Проверка стикеров: http://localhost:3000/stickers/sticker%20(1).png');
+    console.log('🃏 Проверка рубашки: http://localhost:3000/back.png');
 });
 
 // Graceful shutdown

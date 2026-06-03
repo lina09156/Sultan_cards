@@ -74,6 +74,28 @@ let tournamentScores = {};
             }
         }
         
+        /* Пульсация для карт-плейсхолдеров - плавное медленное сияние */
+        @keyframes cardPlaceholderGlow {
+            0%, 100% {
+                border-color: #d4af37;
+                color: #d4af37;
+                background: rgba(80, 80, 80, 0.5);
+                text-shadow: none;
+                filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+            }
+            50% {
+                border-color: #ffd700;
+                color: #ffd700;
+                background: rgba(80, 80, 80, 0.5);
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.9);
+                filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.8));
+            }
+        }
+        
+        .card-placeholder {
+            animation: cardPlaceholderGlow 1.2s ease-in-out;
+        }
+        
         .drop-active {
             box-shadow: 0 0 40px rgba(212, 175, 55, 0.8) !important;
             transition: box-shadow 0.3s ease;
@@ -1844,7 +1866,7 @@ function renderTable(table) {
             emptyDiv.style.cssText = `
                 width: 80px;
                 height: 120px;
-                background: rgba(0,0,0,0.65);
+                background: rgba(80, 80, 80, 0.5);
                 border-radius: 10px;
                 display: flex;
                 align-items: center;
@@ -1856,13 +1878,30 @@ function renderTable(table) {
                 top: 15px;
                 left: 15px;
                 border: 1px dashed #d4af37;
-                backdrop-filter: blur(4px);
+                z-index: 10;
+                animation: cardPlaceholderGlow 1.2s ease-in-out;
+                animation-iteration-count: infinite;
             `;
             pairDiv.appendChild(emptyDiv);
         }
         container.appendChild(pairDiv);
     }
     zone.appendChild(container);
+    
+    // Добавляем периодическую смену анимации для всех плейсхолдеров каждые 6 секунд
+    const allPlaceholders = document.querySelectorAll('.card-placeholder');
+    allPlaceholders.forEach(placeholder => {
+        setInterval(() => {
+            if (placeholder && placeholder.parentNode) {
+                placeholder.style.animation = 'none';
+                setTimeout(() => {
+                    if (placeholder && placeholder.parentNode) {
+                        placeholder.style.animation = 'cardPlaceholderGlow 1.2s ease-in-out';
+                    }
+                }, 10);
+            }
+        }, 6000);
+    });
 }
 
 // ================== РЕНДЕР РУКИ ==================
