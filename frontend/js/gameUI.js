@@ -33,6 +33,84 @@ let actionTimeout = null;
 // Турнирные очки
 let tournamentScores = {};
 
+// Функция для обновления положения кнопок и уведомлений
+function updateButtonsPositionByCardCount() {
+    const hand = document.getElementById('myHand');
+    if (!hand) return;
+    
+    const cardCount = hand.children.length;
+    const statusBar = document.getElementById('statusBar');
+    const actionButtons = document.querySelector('.action-buttons');
+    
+    // Сначала независимо обновляем статус-бар (уведомление)
+    if (statusBar) {
+        statusBar.classList.remove('cards-few', 'cards-many');
+        if (cardCount <= 10) {
+            statusBar.classList.add('cards-few');
+        } else {
+            statusBar.classList.add('cards-many');
+        }
+    }
+    
+    // Затем обновляем кнопки действий, если они появились в DOM
+    if (actionButtons) {
+        actionButtons.classList.remove('cards-few', 'cards-many');
+        if (cardCount <= 10) {
+            actionButtons.classList.add('cards-few');
+        } else {
+            actionButtons.classList.add('cards-many');
+        }
+    }
+    
+    console.log(`📊 Обновлено положение под количество карт (${cardCount}): ${cardCount <= 10 ? 'НИЖЕ (cards-few)' : 'ВЫШЕ (cards-many)'}`);
+}
+
+// =========================================================================
+// АВТОМАТИЧЕСКИЙ СЛЕДИТЕЛЬ (MutationObserver)
+// Перехватывает появление кнопки "ЗАБРАТЬ" и мгновенно ставит её на место
+// =========================================================================
+(function() {
+    const observer = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+        for (let mutation of mutations) {
+            if (mutation.type === 'childList') {
+                shouldUpdate = true;
+                break;
+            }
+        }
+        if (shouldUpdate) {
+            updateButtonsPositionByCardCount();
+        }
+    });
+
+    function startObserving() {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        // Первичный запуск
+        updateButtonsPositionByCardCount();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startObserving);
+    } else {
+        startObserving();
+    }
+})();
+
+// Определяем количество игроков и добавляем класс для режима троих
+function updatePlayerCountClass() {
+    if (currentGameState && currentGameState.players) {
+        const playerCount = currentGameState.players.length;
+        if (playerCount === 3) {
+            document.body.classList.add('players-3');
+        } else {
+            document.body.classList.remove('players-3');
+        }
+    }
+}
+
 // Добавляем стили для анимаций
 (function addGameStyles() {
     const gameStyles = document.createElement('style');
@@ -1179,23 +1257,48 @@ function updateTournamentDisplay() {
     const oldDisplay = document.getElementById('tournamentDisplay');
     if (oldDisplay) oldDisplay.remove();
     
+    // Удаляем старую кнопку-корону, если есть
+    const oldCrownBtn = document.getElementById('crownToggleBtn');
+    if (oldCrownBtn) oldCrownBtn.remove();
+    
     if (!tournamentScores || Object.keys(tournamentScores).length === 0) return;
     
+    // Проверяем, мобильное ли устройство
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    
+    // НА МОБИЛЬНЫХ: добавляем кнопку-корону
+    if (isMobile) {
+        const crownBtn = document.createElement('div');
+        crownBtn.id = 'crownToggleBtn';
+        crownBtn.className = 'crown-toggle-btn';
+        crownBtn.innerHTML = '👑';
+        crownBtn.setAttribute('aria-label', 'Показать турнирную таблицу');
+        document.body.appendChild(crownBtn);
+        
+        // Обработчик нажатия на корону
+        crownBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const display = document.getElementById('tournamentDisplay');
+            if (display) {
+                display.classList.toggle('active');
+                // Анимация пульсации при нажатии
+                crownBtn.style.animation = 'crownPulse 0.3s ease';
+                setTimeout(() => {
+                    crownBtn.style.animation = '';
+                }, 300);
+            }
+        });
+    }
+    
+    // Создаём саму турнирную таблицу
     const display = document.createElement('div');
     display.id = 'tournamentDisplay';
-    display.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(10, 6, 4, 0.95);
-        backdrop-filter: blur(12px);
-        border: 2px solid #d4af37;
-        border-radius: 20px;
-        padding: 15px 20px;
-        z-index: 800;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-        min-width: 260px;
-    `;
+    
+    // На мобильных добавляем класс active при открытии
+    if (isMobile) {
+        display.classList.remove('active'); // по умолчанию закрыта
+    }
     
     const target = winTarget || 3;
     const consecutiveInfo = window.consecutiveInfo || {};
@@ -1206,7 +1309,10 @@ function updateTournamentDisplay() {
         </div>
     `;
     
-    for (const [username, score] of Object.entries(tournamentScores)) {
+    // Сортируем игроков по очкам (по убыванию)
+    const sortedPlayers = Object.entries(tournamentScores).sort((a, b) => b[1] - a[1]);
+    
+    for (const [username, score] of sortedPlayers) {
         const isMe = username === playerName;
         const consecutive = consecutiveInfo[username] || 0;
         
@@ -1262,8 +1368,48 @@ function updateTournamentDisplay() {
         `;
     }
     
+    // На мобильных добавляем кнопку закрытия (крестик)
+    if (isMobile) {
+        html += `
+            <button class="mobile-close-btn" onclick="event.stopPropagation(); document.getElementById('tournamentDisplay').classList.remove('active');">✕</button>
+        `;
+    }
+    
     display.innerHTML = html;
     document.body.appendChild(display);
+    
+    // Добавляем обработчик клика на крестик (если через onclick не сработало)
+    const closeBtn = display.querySelector('.mobile-close-btn');
+    if (closeBtn && isMobile) {
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            display.classList.remove('active');
+        });
+    }
+    
+    // Клик вне таблицы — закрываем (только на мобильных)
+    if (isMobile) {
+        // Удаляем предыдущий обработчик, если есть
+        if (window._closeTournamentHandler) {
+            document.removeEventListener('click', window._closeTournamentHandler);
+        }
+        
+        window._closeTournamentHandler = (e) => {
+            const displayEl = document.getElementById('tournamentDisplay');
+            const crownBtnEl = document.getElementById('crownToggleBtn');
+            if (displayEl && displayEl.classList.contains('active')) {
+                // Если клик не по таблице и не по короне
+                if (!displayEl.contains(e.target) && !crownBtnEl?.contains(e.target)) {
+                    displayEl.classList.remove('active');
+                }
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', window._closeTournamentHandler);
+        }, 100);
+    }
 }
 
 // ================== АНИМАЦИЯ РАЗДАЧИ ==================
@@ -1274,6 +1420,13 @@ function startDealingAnimation(data) {
     const { players, dealerIndex: dealer, cardsPerPlayer = 12 } = data;
     dealerIndex = dealer;
     currentCardsPerPlayer = cardsPerPlayer;
+    
+    // Обновляем класс для режима троих
+    if (players && players.length === 3) {
+        document.body.classList.add('players-3');
+    } else {
+        document.body.classList.remove('players-3');
+    }
     
     const dealerName = players[dealerIndex]?.username || 'Случайный игрок';
     
@@ -1676,6 +1829,9 @@ function updateGameState(state) {
     hideLoadingScreen();
     currentGameState = state;
     
+    // Обновляем класс для режима троих
+    updatePlayerCountClass();
+    
     if (dealingInProgress) {
         console.log('Анимация раздачи еще идет, карты скрыты');
         if (state.players) {
@@ -1937,6 +2093,9 @@ function renderMyHand(hand, state) {
         else {
             handEl.innerHTML = '<div style="background:rgba(0,0,0,0.6); padding:15px 30px; border-radius:60px; text-align:center; color:#ff4444; font-size:22px; font-weight:bold;">💀 ВЫ ПРОИГРАЛИ 💀<br><span style="font-size:14px; color:#c9af7b;">Ожидайте следующий раунд</span></div>';
         }
+        
+        // Обновляем позицию кнопок при пустой руке
+        updateButtonsPositionByCardCount();
         return;
     }
     
@@ -1952,6 +2111,9 @@ function renderMyHand(hand, state) {
     });
     
     setupTableDropZone();
+    
+    // Обновляем позицию кнопок в зависимости от количества карт
+    updateButtonsPositionByCardCount();
 }
 
 // ================== DRAG & DROP ==================

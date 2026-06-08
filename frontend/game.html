@@ -33,6 +33,12 @@
             align-items: center;
         }
         
+        /* Иконка чата для телефона (скрыта по умолчанию) */
+        .chat-icon-mobile {
+            display: none;
+            font-size: 24px;
+        }
+        
         .chat-header h3 {
             color: #d4af37;
             font-size: 16px;
@@ -247,7 +253,6 @@
             border: 2px solid #d4af37;
         }
         
-        /* Стрелка для пузыря снизу (стандартная) */
         .speech-bubble::after {
             content: '';
             position: absolute;
@@ -258,7 +263,6 @@
             border-color: white transparent transparent transparent;
         }
         
-        /* Стрелка для пузыря слева (для верхнего игрока) */
         .speech-bubble[data-arrow="left"]::after {
             content: '';
             position: absolute;
@@ -272,7 +276,6 @@
             right: auto;
         }
         
-        /* Стрелка для пузыря сверху (для бокового игрока) */
         .speech-bubble[data-arrow="top"]::after {
             content: '';
             position: absolute;
@@ -312,89 +315,518 @@
         .player-badge {
             position: relative;
         }
-        
-        /* Адаптивные стили */
+
+        /* ========================================== */
+        /* НОВЫЕ СУПЕР-АДАПТИВНЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНА  */
+        /* ========================================== */
         @media (max-width: 768px) {
-            .chat-container {
-                width: calc(100% - 20px);
-                left: 10px;
-                right: 10px;
-                bottom: 80px;
-                max-width: none;
+            
+            #gameContainer {
+                height: 100vh !important;
+                height: 100dvh !important;
+                overflow: hidden !important;
+                position: relative !important;
+            }
+
+            .game-board {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                width: 100vw !important;
+                position: relative !important;
+                padding-top: 150px !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+
+            .main-table {
+                width: 82vw !important;
+                height: 82vw !important;
+                max-width: 320px !important;
+                max-height: 320px !important;
+                border-radius: 50% !important;
+                position: relative !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 5 !important;
+                transform: translateY(-10px) !important;
+            }
+
+            .table-pairs {
+                transform: scale(0.8) !important;
+            }
+
+            .player-badge {
+                scale: 0.8 !important;
+                position: absolute !important;
+                z-index: 10 !important;
+            }
+
+            .player-top {
+                top: 55px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                right: auto !important;
+                bottom: auto !important;
+            }
+
+            .player-right {
+                top: 100px !important;
+                right: 10px !important;
+                left: auto !important;
+                transform: none !important;
+                bottom: auto !important;
             }
             
+            .player-right .badge-info {
+                transform: none !important;
+            }
+
+            .my-area {
+                position: fixed !important;
+                bottom: 8px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 100% !important;
+                max-width: 450px !important;
+                display: flex !important;
+                justify-content: center !important;
+                z-index: 900 !important;
+                pointer-events: none !important;
+                background-size: 100% 100% !important;
+                min-height: 140px !important;
+            }
+
+            #myHand, .hand {
+                display: flex !important;
+                justify-content: center !important;
+                align-items: flex-end !important;
+                width: 95vw !important;
+                margin: 0 auto !important;
+                pointer-events: none !important;
+                gap: -15px !important;
+            }
+
+            #myHand .card, .hand .card, .card {
+                pointer-events: auto !important;
+                width: 56px !important;
+                height: 80px !important;
+                margin-left: -18px !important;
+                border-radius: 8px !important;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+                transition: transform 0.2s ease-out !important;
+                transform-origin: bottom center !important;
+                font-size: 1.2em !important;
+            }
+
+            .card .rank, .card .suit, .card span, .card div {
+                font-size: 0.7em !important;
+                line-height: 1.2 !important;
+            }
+            
+            .card img {
+                max-width: 70% !important;
+                max-height: 70% !important;
+                object-fit: contain !important;
+            }
+
+            #myHand .card:first-child, .hand .card:first-child {
+                margin-left: 0 !important;
+            }
+
+            #myHand .card:hover, .hand .card:hover {
+                transform: translateY(-20px) scale(1.15) !important;
+                z-index: 1000 !important;
+            }
+
+            /* Кнопка статуса */
+            #statusBar,
+            .status-toast,
+            .turn-indicator {
+                position: fixed !important;
+                bottom: 110px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                z-index: 980 !important;
+                width: auto !important;
+                min-width: 160px !important;
+                max-width: 85vw !important;
+                text-align: center !important;
+                padding: 6px 10px !important;
+                border-radius: 20px !important;
+                font-size: 12px !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+                white-space: normal !important;
+            }
+
+            /* Кнопка выхода (крестик) */
+            .minimal-exit {
+                position: fixed !important;
+                top: 12px !important;
+                left: 12px !important;
+                right: auto !important;
+                z-index: 10000 !important;
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 18px !important;
+                line-height: 34px !important;
+                padding: 0 !important;
+                background: rgba(26, 71, 49, 0.9) !important;
+                border: 1.5px solid #e6b422 !important;
+            }
+
+            /* Кнопка турнирной таблицы (корона) */
+            #toggleLeaderboardBtn {
+                position: fixed !important;
+                top: 12px !important;
+                right: 12px !important;
+                z-index: 10000 !important;
+                width: 36px !important;
+                height: 36px !important;
+                background: rgba(26, 71, 49, 0.9) !important;
+                border: 1.5px solid #e6b422 !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                cursor: pointer !important;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            #toggleLeaderboardBtn::before {
+                content: '👑' !important;
+                font-size: 18px !important;
+                line-height: 1 !important;
+            }
+
+            /* Турнирная таблица */
+            #tournamentDisplay {
+                display: none !important;
+                position: fixed !important;
+                top: 55px !important;
+                right: 10px !important;
+                left: auto !important;
+                width: calc(100% - 20px) !important;
+                max-width: 280px !important;
+                height: auto !important;
+                max-height: 65vh !important;
+                background: rgba(10, 6, 4, 0.98) !important;
+                backdrop-filter: blur(12px) !important;
+                border-radius: 16px !important;
+                border: 2px solid #e6b422 !important;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5) !important;
+                z-index: 10001 !important;
+                padding: 10px !important;
+                box-sizing: border-box !important;
+                overflow-y: auto !important;
+                margin: 0 !important;
+            }
+
+            #tournamentDisplay.active {
+                display: block !important;
+            }
+
+            /* КНОПКИ ДЕЙСТВИЙ - для телефона (обычное состояние) */
+            .action-buttons {
+                position: fixed !important;
+                bottom: 15px !important;
+                right: 15px !important;
+                left: auto !important;
+                top: auto !important;
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 10px !important;
+                z-index: 1200 !important;
+                background: rgba(14, 42, 26, 0.9) !important;
+                backdrop-filter: blur(16px) !important;
+                padding: 8px 15px !important;
+                border-radius: 50px !important;
+                border: 2px solid rgba(230, 180, 34, 0.9) !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+                width: auto !important;
+                min-width: unset !important;
+            }
+
+            /* ========== ТОЛЬКО ДЛЯ РЕЖИМА ТРОИХ НА ТЕЛЕФОНЕ ========== */
+            /* Уведомление - поднимаем выше */
+            .players-3 #statusBar,
+            .players-3 .status-toast,
+            .players-3 .turn-indicator {
+                bottom: 195px !important;
+                top: auto !important;
+            }
+
+            /* Кнопки для режима троих - поднимаем выше и убираем подложку */
+            .players-3 .action-buttons {
+                position: fixed !important;
+                bottom: 195px !important;
+                right: auto !important;
+                left: calc(8px + 260px) !important;
+                background: none !important;
+                background-color: transparent !important;
+                backdrop-filter: none !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                gap: 10px !important;
+                z-index: 1200 !important;
+            }
+
+            /* Стили кнопок для режима троих */
+            .players-3 .action-btn,
+            .players-3 .action-btn-take {
+                padding: 8px 18px !important;
+                font-size: 12px !important;
+                border-radius: 24px !important;
+            }
+
+            .players-3 .action-btn {
+                background: linear-gradient(135deg, #dc3545, #a00020) !important;
+                color: white !important;
+                border: none !important;
+            }
+
+            .players-3 .action-btn-take {
+                background: linear-gradient(135deg, #8b1a1a, #5c0e0e) !important;
+                color: #ffd700 !important;
+                border: 1px solid #e6b422 !important;
+            }
+
+            /* Маленькие экраны для режима троих */
+            @media (max-width: 480px) {
+                .players-3 .action-buttons {
+                    left: calc(8px + 180px) !important;
+                    bottom: 175px !important;
+                }
+                .players-3 #statusBar,
+                .players-3 .status-toast {
+                    bottom: 175px !important;
+                }
+                .players-3 .action-btn,
+                .players-3 .action-btn-take {
+                    padding: 6px 14px !important;
+                    font-size: 10px !important;
+                }
+            }
+
+            @media (max-width: 380px) {
+                .players-3 .action-buttons {
+                    left: calc(8px + 150px) !important;
+                    bottom: 165px !important;
+                }
+                .players-3 #statusBar,
+                .players-3 .status-toast {
+                    bottom: 165px !important;
+                }
+                .players-3 .action-btn,
+                .players-3 .action-btn-take {
+                    padding: 5px 10px !important;
+                    font-size: 9px !important;
+                }
+            }
+            
+            .action-btn, .action-btn-take {
+                padding: 8px 16px !important;
+                font-size: 12px !important;
+                font-weight: 700 !important;
+                border-radius: 40px !important;
+                white-space: nowrap !important;
+            }
+            
+            .action-btn {
+                background: linear-gradient(135deg, #dc3545, #a00020) !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            .action-btn-take {
+                background: linear-gradient(135deg, #8b1a1a, #5c0e0e) !important;
+                color: #ffd700 !important;
+                border: 1px solid #e6b422 !important;
+            }
+
+            /* ========== СТИЛИ ДЛЯ ИКОНКИ ЧАТА НА ТЕЛЕФОНЕ ========== */
+            /* Когда чат скрыт - показываем иконку вместо текста */
+            .chat-container.collapsed {
+                width: 50px !important;
+                height: 50px !important;
+                border-radius: 50% !important;
+                bottom: 15px !important;
+                left: 15px !important;
+                overflow: hidden !important;
+                border: 2px solid #e6b422 !important;
+                padding: 0 !important;
+                background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 0 2px rgba(230, 180, 34, 0.3) !important;
+                display: block !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            .chat-container.collapsed .chat-header {
+                height: 100% !important;
+                padding: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: transparent !important;
+                border: none !important;
+            }
+            
+            /* Скрываем текст и статус в свернутом чате */
+            .chat-container.collapsed .chat-header h3 {
+                display: none !important;
+            }
+            
+            .chat-container.collapsed .chat-header .chat-status {
+                display: none !important;
+            }
+            
+            /* Показываем иконку в свернутом чате */
+            .chat-container.collapsed .chat-icon-mobile {
+                display: block !important;
+                font-size: 26px !important;
+                color: #e6b422 !important;
+            }
+
+            /* Скрываем содержимое чата когда он свернут */
+            .chat-container.collapsed .chat-messages,
+            .chat-container.collapsed .chat-input-area,
+            .chat-container.collapsed .sticker-panel {
+                display: none !important;
+            }
+            
+            /* Когда чат открыт - показываем как обычно */
+            .chat-container:not(.collapsed) {
+                position: fixed !important;
+                bottom: 15px !important;
+                left: 15px !important;
+                width: calc(100% - 30px) !important;
+                max-width: 340px !important;
+                height: auto !important;
+                min-height: 320px !important;
+                border-radius: 20px !important;
+                z-index: 2000 !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            
+            /* Скрываем иконку когда чат открыт */
+            .chat-container:not(.collapsed) .chat-icon-mobile {
+                display: none !important;
+            }
+            
+            /* Показываем заголовок когда чат открыт */
+            .chat-container:not(.collapsed) .chat-header h3 {
+                display: block !important;
+            }
+            
+            /* Плавная анимация для контента чата при открытии */
+            .chat-container:not(.collapsed) .chat-messages,
+            .chat-container:not(.collapsed) .chat-input-area {
+                animation: chatSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            @keyframes chatSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
             .chat-messages {
-                height: 200px;
+                height: 190px !important;
             }
-            
-            .message-sticker {
-                max-width: 45px;
-                width: 45px;
+
+            .message-sticker, .message-sticker img {
+                max-width: 40px !important;
+                width: 40px !important;
             }
-            
-            .message-sticker img {
-                max-width: 45px;
-                max-height: 45px;
-            }
-            
+
             .sticker-option {
-                width: 45px;
-                height: 45px;
-            }
-            
-            .speech-bubble {
-                max-width: 120px;
-                font-size: 10px;
-                padding: 5px 10px;
-            }
-            
-            .speech-bubble.sticker-bubble {
-                max-width: 55px;
-            }
-            
-            .speech-bubble.sticker-bubble img {
-                max-width: 45px;
-                max-height: 45px;
+                width: 40px !important;
+                height: 40px !important;
             }
         }
         
+        /* На ПК иконка НЕ ПОКАЗЫВАЕТСЯ */
+        @media (min-width: 769px) {
+            .chat-icon-mobile {
+                display: none !important;
+            }
+        }
+
         @media (max-width: 480px) {
             .chat-input-area {
-                padding: 8px;
-                gap: 6px;
+                padding: 6px !important;
+                gap: 5px !important;
             }
-            
             .chat-input {
-                font-size: 12px;
-                padding: 6px 10px;
+                font-size: 11px !important;
+                padding: 5px 8px !important;
             }
-            
             .chat-send-btn {
-                padding: 6px 12px;
-                font-size: 12px;
+                padding: 5px 10px !important;
+                font-size: 11px !important;
             }
-            
             .sticker-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 16px;
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 14px !important;
             }
             
-            .sticker-option {
-                width: 40px;
-                height: 40px;
+            #myHand .card, .hand .card, .card {
+                width: 48px !important;
+                height: 68px !important;
+                margin-left: -14px !important;
             }
-        }
-        
-        @media (max-width: 900px) and (orientation: landscape) {
-            .chat-container {
-                display: none;
+            
+            #statusBar {
+                bottom: 95px !important;
+                font-size: 10px !important;
+                padding: 4px 8px !important;
+                min-width: 130px !important;
+            }
+            
+            .my-area {
+                bottom: 4px !important;
+                min-height: 110px !important;
+            }
+            
+            .action-btn, .action-btn-take {
+                padding: 6px 12px !important;
+                font-size: 10px !important;
+            }
+            
+            .action-buttons {
+                padding: 6px 12px !important;
+                gap: 8px !important;
+                bottom: 12px !important;
+                right: 12px !important;
+            }
+            
+            .chat-container.collapsed {
+                width: 45px !important;
+                height: 45px !important;
+            }
+            
+            .chat-container.collapsed .chat-icon-mobile {
+                font-size: 22px !important;
             }
         }
     </style>
 </head>
 <body>
     <button class="minimal-exit" onclick="exitGame()" title="Выйти">✕</button>
+    <button id="toggleLeaderboardBtn" title="Турнирная таблица"></button>
 
     <div id="gameContainer">
         <div id="statusBar" class="status-toast" style="background: rgba(10, 6, 4, 0.92); border-left-color: #d4af37;">Ожидание...</div>
@@ -424,9 +856,11 @@
         </div>
     </div>
 
-    <!-- Чат компонент -->
+    <!-- Чат компонент с иконкой для телефона -->
+    <!-- На ПК чат открыт по умолчанию (без класса collapsed), на телефоне - свернут -->
     <div class="chat-container" id="chatContainer">
         <div class="chat-header" onclick="toggleChat()">
+            <div class="chat-icon-mobile">💬</div>
             <h3>💬 ЧАТ</h3>
             <span class="chat-status" id="chatStatus">●</span>
         </div>
@@ -448,9 +882,17 @@
     <script src="js/gameUI.js"></script>
     <script>
         // Глобальные переменные для чата
-        let chatCollapsed = false;
+        let chatCollapsed = false; // По умолчанию НЕ свернут (открыт) на ПК
         let currentPlayerName = null;
         let currentChatSocket = null;
+        let isMobile = window.innerWidth <= 768;
+        
+        // Если это телефон - изначально чат должен быть свернут
+        if (isMobile) {
+            chatCollapsed = true;
+            const container = document.getElementById('chatContainer');
+            if (container) container.classList.add('collapsed');
+        }
         
         const urlParams = new URLSearchParams(window.location.search);
         const lobbyId = urlParams.get('lobbyId');
@@ -465,19 +907,48 @@
         window.playerName = sessionStorage.getItem('playerName');
         
         function toggleChat() {
+            const container = document.getElementById('chatContainer');
             const messages = document.getElementById('chatMessages');
             const inputArea = document.querySelector('.chat-input-area');
             const stickerPanel = document.getElementById('stickerPanel');
+            const isMobileNow = window.innerWidth <= 768;
             
-            if (!chatCollapsed) {
-                if (messages) messages.style.display = 'none';
-                if (inputArea) inputArea.style.display = 'none';
-                if (stickerPanel) stickerPanel.classList.remove('active');
-                chatCollapsed = true;
-            } else {
-                if (messages) messages.style.display = 'flex';
-                if (inputArea) inputArea.style.display = 'flex';
-                chatCollapsed = false;
+            if (!container) return;
+            
+            // Для ПК - используем старую логику (display: none/flex)
+            if (!isMobileNow) {
+                if (!chatCollapsed) {
+                    if (messages) messages.style.display = 'none';
+                    if (inputArea) inputArea.style.display = 'none';
+                    if (stickerPanel) stickerPanel.classList.remove('active');
+                    if (container) container.classList.add('collapsed');
+                    chatCollapsed = true;
+                } else {
+                    if (messages) messages.style.display = 'flex';
+                    if (inputArea) inputArea.style.display = 'flex';
+                    if (container) container.classList.remove('collapsed');
+                    chatCollapsed = false;
+                }
+            } 
+            // Для телефона - используем класс collapsed (с плавной анимацией)
+            else {
+                if (chatCollapsed) {
+                    // Открываем чат
+                    container.classList.remove('collapsed');
+                    // Небольшая задержка для плавного появления контента
+                    setTimeout(() => {
+                        if (messages) messages.style.display = 'flex';
+                        if (inputArea) inputArea.style.display = 'flex';
+                    }, 50);
+                    chatCollapsed = false;
+                } else {
+                    // Закрываем чат
+                    if (messages) messages.style.display = 'none';
+                    if (inputArea) inputArea.style.display = 'none';
+                    if (stickerPanel) stickerPanel.classList.remove('active');
+                    container.classList.add('collapsed');
+                    chatCollapsed = true;
+                }
             }
         }
         
@@ -628,29 +1099,24 @@
                 bubble.textContent = message.length > 30 ? message.substring(0, 27) + '...' : message;
             }
             
-            // Определяем позицию игрока и устанавливаем направление стрелки
             const isTopPlayer = playerElement.classList.contains('player-top');
             const isRightPlayer = playerElement.classList.contains('player-right');
             
             let top, left;
             
             if (isTopPlayer) {
-                // Верхний игрок - пузырь СПРАВА от ника
                 top = rect.top + rect.height / 2 - 30;
                 left = rect.right + 10;
                 bubble.setAttribute('data-arrow', 'left');
             } 
             else if (isRightPlayer) {
-                // Правый/боковой игрок - пузырь СВЕРХУ
                 top = rect.top - 70;
                 left = rect.left + rect.width / 2 - 35;
                 bubble.setAttribute('data-arrow', 'top');
             }
             else {
-                // Нижний игрок - пузырь СВЕРХУ (стандарт)
                 top = rect.top - 70;
                 left = rect.left + rect.width / 2 - 35;
-                // стандартная стрелка снизу (не нужно добавлять атрибут)
             }
             
             bubble.style.position = 'fixed';
@@ -699,23 +1165,33 @@
             }
         };
         
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', () => {
-            const input = document.getElementById('chatInput');
-            if (input) {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        sendChatMessage();
-                    }
-                });
+            // Для ПК - чат открыт (без collapsed)
+            // Для телефона - уже свернут (класс добавлен выше)
+            
+            // Кнопка турнирной таблицы
+            let toggleBtn = document.getElementById('toggleLeaderboardBtn');
+            if (!toggleBtn) {
+                toggleBtn = document.createElement('button');
+                toggleBtn.id = 'toggleLeaderboardBtn';
+                toggleBtn.title = 'Турнирная таблица';
+                document.body.appendChild(toggleBtn);
             }
             
-            if ('ontouchstart' in window) {
-                const chatContainer = document.getElementById('chatContainer');
-                if (chatContainer) {
-                    chatContainer.style.transform = 'translateZ(0)';
+            function toggleTournamentTable() {
+                const tournamentDisplay = document.getElementById('tournamentDisplay');
+                if (tournamentDisplay) {
+                    tournamentDisplay.classList.toggle('active');
+                } else {
+                    console.warn('Турнирная таблица не найдена');
                 }
             }
+            
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleTournamentTable();
+            });
         });
         
         loadStickers();
