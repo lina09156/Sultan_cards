@@ -1687,6 +1687,22 @@ function startDealingAnimation(data) {
             window.animateAllCardsDefeated();
         }
     });
+
+    socket.on('forceLeaveLobby', (data) => {
+        console.log('🔴 Принудительный выход из лобби:', data);
+        sessionStorage.removeItem('currentLobbyId');
+        setTimeout(() => {
+            window.location.href = '/lobby.html';
+        }, 500);
+    });
+
+    socket.on('exitConfirmed', () => {
+        console.log('✅ Выход из игры подтверждён');
+        sessionStorage.removeItem('currentLobbyId');
+        setTimeout(() => {
+            window.location.href = '/lobby.html';
+        }, 500);
+    });
     
     socket.once('startDealingAnimation', () => {
         animateCardDistribution(players, dealerIndex, overlay, cardsPerPlayer);
@@ -2816,8 +2832,23 @@ function reorderPlayersForMe(players, myUsername) {
 }
 
 function exitGame() {
-    if (confirm('Выйти из игры? Вы вернетесь в лобби.')) {
-        window.location.href = '/lobby.html';
+    if (confirm('Выйти из игры?\n\nВаш ход будет передан другому игроку.\nПри ничьей краны будут возвращены.')) {
+        if (socket && socket.connected) {
+            socket.emit('playerExitGame', { 
+                username: playerName, 
+                lobbyId: currentLobbyId 
+            });
+        }
+        
+        // Дополнительная очистка
+        sessionStorage.removeItem('currentLobbyId');
+        
+        // Если через 2 секунды не перенаправились - делаем принудительно
+        setTimeout(() => {
+            if (window.location.pathname !== '/lobby.html') {
+                window.location.href = '/lobby.html';
+            }
+        }, 2000);
     }
 }
 

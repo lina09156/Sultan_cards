@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    // VK специфичные поля
     vkId: {
         type: String,
         sparse: true,
@@ -64,19 +63,14 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Хеширование пароля перед сохранением
-userSchema.pre('save', async function(next) {
+// ПРАВИЛЬНЫЙ pre-save middleware для Mongoose 7+
+userSchema.pre('save', async function() {
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
     
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Метод для проверки пароля
@@ -84,14 +78,12 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Добавление кранов
 userSchema.methods.addCoins = async function(amount) {
     this.coins += amount;
     await this.save();
     return this.coins;
 };
 
-// Списание кранов
 userSchema.methods.spendCoins = async function(amount) {
     if (this.coins < amount) {
         throw new Error('Недостаточно кранов');
@@ -101,7 +93,6 @@ userSchema.methods.spendCoins = async function(amount) {
     return this.coins;
 };
 
-// Обновление статистики
 userSchema.methods.addWin = async function() {
     this.wins++;
     this.gamesPlayed++;

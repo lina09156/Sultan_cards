@@ -4,12 +4,9 @@ const Player = require('../models/Player');
 let lobbies = new Map();
 let activeGames = new Map();
 let tournamentScores = new Map();
-let readyStatus = new Map(); // lobbyId -> Map(username -> ready)
+let readyStatus = new Map();
 
-// Максимальное количество одновременно открытых лобби
 const MAX_VISIBLE_LOBBIES = 5;
-
-// Глобальная ссылка на io
 let ioInstance = null;
 
 module.exports = (io) => {
@@ -377,6 +374,100 @@ module.exports = (io) => {
             if (callback) callback({ success: true });
         });
 
+        // НОВЫЙ ОБРАБОТЧИК ВЫХОДА ИЗ ИГРЫ
+        socket.on('playerExitGame', async (data) => {
+            const { username, lobbyId } = data;
+            const game = activeGames.get(lobbyId);
+            
+            if (!game) {
+                socket.emit('exitConfirmed');
+                return;
+            }
+            
+            const exitingPlayer = game.players.find(p => p.username === username);
+            if (!exitingPlayer) {
+                socket.emit('exitConfirmed');
+                return;
+            }
+            
+            console.log(`🚪 Игрок ${username} вышел из игры`);
+            
+            if (game.players.length === 2) {
+                // При 2 игроках - второй игрок автоматически побеждает
+                const winner = game.players.find(p => p.username !== username);
+                if (winner) {
+                    await game.awardWinnerCoins(winner.username, game.totalPot);
+                    
+                    game.players.forEach(p => {
+                        if (p.socket && p.socket.connected) {
+                            p.socket.emit('gameOver', { 
+                                winner: winner.username,
+                                message: `${username} покинул игру`
+                            });
+                            p.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                            p.socket.currentLobby = null;
+                            p.socket.currentUsername = null;
+                        }
+                    });
+                    
+                    game.cleanupLobbyAfterGame(lobbyId);
+                }
+            } else {
+                // При 3 игроках - объявляем ничью и возвращаем краны
+                const refundPerPlayer = Math.floor(game.totalPot / game.players.length);
+                
+                for (const player of game.players) {
+                    if (player.username !== username) {
+                        try {
+                            const fetch = require('node-fetch');
+                            await fetch('http://localhost:3000/api/auth/add-coins', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username: player.username, amount: refundPerPlayer })
+                            });
+                            
+                            if (player.socket && player.socket.connected) {
+                                player.socket.emit('chatMessage', {
+                                    username: '🔄 СИСТЕМА',
+                                    message: `${username} покинул игру. Вам возвращено ${refundPerPlayer} кранов.`
+                                });
+                                player.socket.emit('gameOver', { 
+                                    winner: 'Ничья - игрок покинул игру',
+                                    isDraw: true
+                                });
+                                player.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                                player.socket.currentLobby = null;
+                                player.socket.currentUsername = null;
+                            }
+                        } catch (error) {
+                            console.error('Ошибка возврата кранов:', error);
+                        }
+                    }
+                }
+                
+                // Очищаем лобби
+                const lobby = lobbies.get(lobbyId);
+                if (lobby) {
+                    lobby.players = lobby.players.filter(p => p.username !== username);
+                    lobby.playersCount = lobby.players.length;
+                    
+                    if (lobby.players.length === 0) {
+                        lobbies.delete(lobbyId);
+                        readyStatus.delete(lobbyId);
+                    } else {
+                        if (lobby.creator === username) lobby.creator = lobby.players[0].username;
+                        broadcastLobbyUpdate(lobbyId);
+                    }
+                    broadcastLobbiesList();
+                }
+                
+                activeGames.delete(lobbyId);
+                tournamentScores.delete(lobbyId);
+            }
+            
+            socket.emit('exitConfirmed');
+        });
+
         socket.on('startGame', async (data, callback) => {
             const lobbyId = socket.currentLobby;
             const lobby = lobbies.get(lobbyId);
@@ -486,6 +577,35 @@ module.exports = (io) => {
             
             game.currentDealerIndex = Math.floor(Math.random() * game.players.length);
             console.log(`🎲 Сохранён дилер для игры ${lobbyId}: ${game.players[game.currentDealerIndex]?.username} (индекс ${game.currentDealerIndex})`);
+            
+            // Добавляем метод cleanupLobbyAfterGame в game
+            game.cleanupLobbyAfterGame = (lobbyId) => {
+                const lobby = lobbies.get(lobbyId);
+                if (lobby) {
+                    const readyMap = readyStatus.get(lobbyId);
+                    if (readyMap) readyMap.clear();
+                    
+                    lobby.status = 'waiting';
+                    lobby.playersCount = lobby.players.length;
+                    
+                    lobby.players.forEach(player => {
+                        const playerSocket = io.sockets.sockets.get(player.socketId);
+                        if (playerSocket && playerSocket.connected) {
+                            playerSocket.currentLobby = null;
+                            playerSocket.currentUsername = null;
+                            playerSocket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                            playerSocket.emit('lobbyLeft', { force: true });
+                        }
+                    });
+                    
+                    lobbies.delete(lobbyId);
+                    readyStatus.delete(lobbyId);
+                    broadcastLobbiesList();
+                }
+                
+                activeGames.delete(lobbyId);
+                tournamentScores.delete(lobbyId);
+            };
             
             activeGames.set(lobbyId, game);
             
@@ -648,19 +768,19 @@ module.exports = (io) => {
                                     currentGame.players.forEach(p => {
                                         if (p.socket && p.socket.connected) {
                                             p.socket.emit('gameOver', { winner: 'Игра прервана', disconnectedPlayer: disconnectedUsername });
+                                            p.socket.emit('forceLeaveLobby', { message: 'Игра прервана' });
+                                            p.socket.currentLobby = null;
+                                            p.socket.currentUsername = null;
                                         }
                                     });
                                     activeGames.delete(disconnectedLobbyId);
                                     tournamentScores.delete(disconnectedLobbyId);
                                     const lobby = lobbies.get(disconnectedLobbyId);
                                     if (lobby) {
-                                        lobby.status = 'waiting';
-                                        lobby.players = lobby.players.filter(p => p.username !== disconnectedUsername);
-                                        lobby.playersCount = lobby.players.length;
-                                        if (lobby.players.length > 0) lobby.creator = lobby.players[0].username;
-                                        else lobbies.delete(disconnectedLobbyId);
-                                        broadcastLobbiesList();
+                                        lobbies.delete(disconnectedLobbyId);
+                                        readyStatus.delete(disconnectedLobbyId);
                                     }
+                                    broadcastLobbiesList();
                                 }
                             }
                         }, 30000);
@@ -791,19 +911,14 @@ module.exports = (io) => {
                                     winner: 'Ничья - серия прервана', 
                                     isDraw: true
                                 });
+                                p.socket.emit('forceLeaveLobby', { message: 'Игра завершена ничьей' });
+                                p.socket.currentLobby = null;
+                                p.socket.currentUsername = null;
                             }
                         });
                         
                         const lobby = lobbies.get(lobbyId);
                         if (lobby) {
-                            lobby.players.forEach(player => {
-                                const playerSocket = io.sockets.sockets.get(player.socketId);
-                                if (playerSocket && playerSocket.connected) {
-                                    playerSocket.emit('lobbyLeft', { force: true });
-                                    playerSocket.currentLobby = null;
-                                    playerSocket.currentUsername = null;
-                                }
-                            });
                             lobbies.delete(lobbyId);
                             readyStatus.delete(lobbyId);
                         }
@@ -838,19 +953,14 @@ module.exports = (io) => {
                                         winner: 'Ничья - серия султана прервана', 
                                         isDraw: true
                                     });
+                                    p.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                                    p.socket.currentLobby = null;
+                                    p.socket.currentUsername = null;
                                 }
                             });
                             
                             const lobby = lobbies.get(lobbyId);
                             if (lobby) {
-                                lobby.players.forEach(player => {
-                                    const playerSocket = io.sockets.sockets.get(player.socketId);
-                                    if (playerSocket && playerSocket.connected) {
-                                        playerSocket.emit('lobbyLeft', { force: true });
-                                        playerSocket.currentLobby = null;
-                                        playerSocket.currentUsername = null;
-                                    }
-                                });
                                 lobbies.delete(lobbyId);
                                 readyStatus.delete(lobbyId);
                             }

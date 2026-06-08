@@ -2413,6 +2413,19 @@
             });
             refreshLobbies();
         }
+
+        function exitGame() {
+            if (confirm('Выйти из лобби? Вы вернетесь на главный экран.')) {
+                if (currentChatSocket) {
+                    currentChatSocket.emit('leaveGameChat', { username: currentPlayerName, lobbyId: lobbyId });
+                }
+                if (socket && socket.connected) {
+                    socket.emit('leaveLobby', {});
+                }
+                sessionStorage.removeItem('currentLobbyId');
+                window.location.href = '/lobby.html';
+            }
+        }
         
         init();
     </script>

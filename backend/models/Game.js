@@ -960,6 +960,37 @@ class Game {
             }
         });
     }
+    cleanupLobbyAfterGame(lobbyId) {
+        const io = require('../server');
+        const lobbies = global.lobbies || new Map();
+        const readyStatus = global.readyStatus || new Map();
+        
+        const lobby = lobbies.get(lobbyId);
+        if (lobby) {
+            const readyMap = readyStatus.get(lobbyId);
+            if (readyMap) readyMap.clear();
+            
+            lobby.status = 'waiting';
+            lobby.playersCount = lobby.players.length;
+            
+            lobby.players.forEach(player => {
+                const playerSocket = io.io?.sockets?.sockets?.get(player.socketId);
+                if (playerSocket && playerSocket.connected) {
+                    playerSocket.currentLobby = null;
+                    playerSocket.currentUsername = null;
+                    playerSocket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                    playerSocket.emit('lobbyLeft', { force: true });
+                }
+            });
+            
+            lobbies.delete(lobbyId);
+            readyStatus.delete(lobbyId);
+            
+            if (io.io) io.io.emit('lobbiesList', []);
+        }
+    }
 }
+
+
 
 module.exports = Game;
