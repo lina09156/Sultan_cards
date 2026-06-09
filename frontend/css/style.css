@@ -141,7 +141,6 @@ body::before {
     grid-row: 2;
     justify-self: center;
     align-self: center;
-    transform: rotate(90deg);
 }
 
 .badge-info {
@@ -771,24 +770,27 @@ body::before {
     to { opacity: 1; }
 }
 
-/* ========== ТОЛЬКО ДЛЯ ТЕЛЕФОНА: кнопки справа ========== */
+/* ========== ТОЛЬКО ДЛЯ ТЕЛЕФОНА: кнопки и уведомление ========== */
 @media (max-width: 767px) {
     /* Уведомление - слева */
     #statusBar.status-toast {
-        bottom: 135px !important;
+        position: fixed !important;
+        top: auto !important;
         left: 8px !important;
         right: auto !important;
         transform: none !important;
         width: auto !important;
         max-width: none !important;
+        z-index: 1150 !important;
+        transition: bottom 0.3s ease !important;
     }
     
-    /* КНОПКИ - справа, без подложки */
+    /* КНОПКИ - справа */
     div.action-buttons,
     .action-buttons,
     .action-buttons[style] {
         position: fixed !important;
-        bottom: 135px !important;
+        top: auto !important;
         left: auto !important;
         right: 20px !important;
         display: flex !important;
@@ -806,6 +808,7 @@ body::before {
         max-width: auto !important;
         min-width: 0 !important;
         opacity: 1 !important;
+        transition: bottom 0.3s ease !important;
     }
     
     /* Стили кнопок */
@@ -845,8 +848,14 @@ body::before {
         cursor: pointer !important;
     }
     
-    /* Для маленьких экранов */
+    /* Адаптация под средние экраны (до 480px) */
     @media (max-width: 480px) {
+        #statusBar.status-toast {
+            left: 8px !important;
+            font-size: 10px !important;
+            padding: 6px 12px !important;
+        }
+        
         div.action-buttons,
         .action-buttons,
         .action-buttons[style] {
@@ -865,7 +874,13 @@ body::before {
         }
     }
     
+    /* Адаптация под маленькие экраны (до 380px) */
     @media (max-width: 380px) {
+        #statusBar.status-toast {
+            font-size: 9px !important;
+            padding: 5px 10px !important;
+        }
+        
         div.action-buttons,
         .action-buttons,
         .action-buttons[style] {
@@ -885,7 +900,828 @@ body::before {
     }
 }
 
-/* Адаптивные медиа-запросы (остальные) */
+/* ========== ДИНАМИЧЕСКОЕ ПОЛОЖЕНИЕ ДЛЯ 2 ИГРОКОВ ========== */
+@media (max-width: 767px) {
+    /* 8 карт и меньше - ВНИЗУ */
+    .cards-few#statusBar.status-toast,
+    .cards-few.status-toast {
+        bottom: 135px !important;
+    }
+    
+    .cards-few.action-buttons,
+    .cards-few.action-buttons[style] {
+        bottom: 135px !important;
+    }
+    
+    /* 9 карт и больше - ВВЕРХУ */
+    .cards-many#statusBar.status-toast,
+    .cards-many.status-toast {
+        bottom: 195px !important;
+    }
+    
+    .cards-many.action-buttons,
+    .cards-many.action-buttons[style] {
+        bottom: 195px !important;
+    }
+    
+    /* Адаптация под средние экраны (до 480px) */
+    @media (max-width: 480px) {
+        .cards-few#statusBar.status-toast,
+        .cards-few.status-toast { bottom: 125px !important; }
+        .cards-few.action-buttons { bottom: 125px !important; }
+        .cards-many#statusBar.status-toast { bottom: 180px !important; }
+        .cards-many.action-buttons { bottom: 180px !important; }
+    }
+    
+    /* Адаптация под маленькие экраны (до 380px) */
+    @media (max-width: 380px) {
+        .cards-few#statusBar.status-toast,
+        .cards-few.status-toast { bottom: 115px !important; }
+        .cards-few.action-buttons { bottom: 115px !important; }
+        .cards-many#statusBar.status-toast { bottom: 165px !important; }
+        .cards-many.action-buttons { bottom: 165px !important; }
+    }
+}
+
+/* ========== ДИНАМИЧЕСКОЕ ПОЛОЖЕНИЕ ДЛЯ 3 ИГРОКОВ ========== */
+@media (max-width: 767px) {
+    .players-3 #statusBar.status-toast {
+        position: fixed !important;
+        top: auto !important;
+        left: 8px !important;
+        right: auto !important;
+        transition: bottom 0.3s ease !important;
+    }
+    
+    .players-3 div.action-buttons,
+    .players-3 .action-buttons,
+    .players-3 .action-buttons[style] {
+        position: fixed !important;
+        top: auto !important;
+        left: auto !important;
+        right: 20px !important;
+        transition: bottom 0.3s ease !important;
+    }
+    
+    /* 8 карт и меньше - ВНИЗУ */
+    .players-3 .cards-few#statusBar.status-toast,
+    .players-3 .cards-few.status-toast {
+        bottom: 135px !important;
+    }
+    
+    .players-3 .cards-few.action-buttons,
+    .players-3 .cards-few.action-buttons[style] {
+        bottom: 135px !important;
+    }
+    
+    /* 9 карт и больше - ВВЕРХУ */
+    .players-3 .cards-many#statusBar.status-toast,
+    .players-3 .cards-many.status-toast {
+        bottom: 195px !important;
+    }
+    
+    .players-3 .cards-many.action-buttons,
+    .players-3 .cards-many.action-buttons[style] {
+        bottom: 195px !important;
+    }
+    
+    /* Адаптация под средние экраны (до 480px) */
+    @media (max-width: 480px) {
+        .players-3 .cards-few#statusBar.status-toast,
+        .players-3 .cards-few.status-toast { bottom: 125px !important; }
+        .players-3 .cards-few.action-buttons { bottom: 125px !important; }
+        .players-3 .cards-many#statusBar.status-toast { bottom: 180px !important; }
+        .players-3 .cards-many.action-buttons { bottom: 180px !important; }
+    }
+    
+    /* Адаптация под маленькие экраны (до 380px) */
+    @media (max-width: 380px) {
+        .players-3 .cards-few#statusBar.status-toast,
+        .players-3 .cards-few.status-toast { bottom: 115px !important; }
+        .players-3 .cards-few.action-buttons { bottom: 115px !important; }
+        .players-3 .cards-many#statusBar.status-toast { bottom: 165px !important; }
+        .players-3 .cards-many.action-buttons { bottom: 165px !important; }
+    }
+}
+
+/* ========== ДЛЯ ТЕЛЕФОНА: два игрока рядом вверху (только для режима 3 игроков) ========== */
+@media (max-width: 767px) {
+    .players-3 .game-board {
+        position: relative;
+    }
+    
+    .players-3 .player-top {
+        position: absolute !important;
+        top: 55px !important;
+        left: 10px !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+        min-width: 110px !important;
+        max-width: 42% !important;
+        z-index: 10 !important;
+    }
+    
+    .players-3 .player-right {
+        position: absolute !important;
+        top: 55px !important;
+        right: 10px !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: auto !important;
+        min-width: 110px !important;
+        max-width: 42% !important;
+        z-index: 10 !important;
+        display: flex !important;
+    }
+    
+    .players-3 .player-right .badge-info {
+        transform: none !important;
+    }
+    
+    .players-3 .player-badge {
+        padding: 5px 10px !important;
+        border-radius: 25px !important;
+        background: linear-gradient(145deg, rgba(26, 71, 49, 0.95) 0%, rgba(14, 42, 26, 0.98) 100%) !important;
+        backdrop-filter: blur(12px) !important;
+    }
+    
+    .players-3 .player-name {
+        font-size: 10px !important;
+        white-space: nowrap !important;
+    }
+    
+    .players-3 .player-cards {
+        font-size: 8px !important;
+    }
+    
+    .players-3 .role-badge {
+        font-size: 7px !important;
+        padding: 2px 5px !important;
+        margin-top: 2px !important;
+    }
+}
+
+/* ========== СБЛИЖЕНИЕ ВЕРХНИХ ИГРОКОВ ========== */
+@media (max-width: 767px) {
+    .players-3 .player-slot.top-left,
+    .players-3 .player-slot-left,
+    .players-3 .player-slot-1,
+    .players-3 .player-slot[data-pos="1"],
+    .players-3 .player-left,
+    .players-3 .player-1 {
+        left: 48px !important;
+    }
+
+    .players-3 .player-slot.top-right,
+    .players-3 .player-slot-right,
+    .players-3 .player-slot-2,
+    .players-3 .player-slot[data-pos="2"],
+    .players-3 .player-right,
+    .players-3 .player-2 {
+        right: 48px !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .players-3 .player-slot.top-left,
+    .players-3 .player-slot-left,
+    .players-3 .player-slot-1,
+    .players-3 .player-slot[data-pos="1"] {
+        left: 35px !important;
+    }
+
+    .players-3 .player-slot.top-right,
+    .players-3 .player-slot-right,
+    .players-3 .player-slot-2,
+    .players-3 .player-slot[data-pos="2"] {
+        right: 35px !important;
+    }
+}
+
+/* ========== ДЛЯ ПК: правый игрок вертикально (как верхний) ========== */
+@media (min-width: 768px) {
+    /* Убираем поворот у правого игрока */
+    .player-right {
+        transform: none !important;
+    }
+    
+    /* Текст внутри тоже без поворота */
+    .player-right .badge-info {
+        transform: none !important;
+    }
+    
+    /* Выравниваем по центру как и верхнего игрока */
+    .player-right {
+        justify-self: center !important;
+        align-self: center !important;
+    }
+}
+
+/* На телефонах (до 768px) оставляем как было — с поворотом */
+@media (max-width: 767px) {
+    .player-right {
+        transform: rotate(90deg) !important;
+    }
+    
+    .player-right .badge-info {
+        transform: rotate(-90deg) !important;
+    }
+}
+
+/* ========== УВЕЛИЧЕНИЕ КАРТ НА СТОЛЕ ДЛЯ ТЕЛЕФОНОВ ========== */
+@media (max-width: 768px) {
+    .table-pairs .card-pair {
+        width: 75px !important;
+        height: 105px !important;
+    }
+    
+    .table-pairs .card-pair .card {
+        width: 75px !important;
+        height: 105px !important;
+    }
+    
+    .table-pairs .card-pair .card:first-child {
+        position: relative;
+        z-index: 1;
+        width: 75px !important;
+        height: 105px !important;
+    }
+    
+    .table-pairs .card-pair .card:last-child {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 2;
+        transform: rotate(5deg);
+        width: 75px !important;
+        height: 105px !important;
+    }
+    
+    .table-pairs .card-pair .card-placeholder {
+        width: 75px !important;
+        height: 105px !important;
+        top: 12px !important;
+        left: 12px !important;
+        font-size: 28px !important;
+    }
+    
+    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+        font-size: 32px !important;
+    }
+    
+    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+        font-size: 38px !important;
+    }
+    
+    .table-pairs .card .card-value:first-child {
+        font-size: 14px !important;
+        top: 6px !important;
+        left: 6px !important;
+    }
+    
+    .table-pairs .card .card-suit:first-of-type {
+        font-size: 14px !important;
+        top: 6px !important;
+        left: 28px !important;
+    }
+    
+    .table-pairs {
+        gap: 18px !important;
+        padding: 12px !important;
+    }
+    
+    #tableZone .empty-text {
+        font-size: 12px !important;
+        padding: 12px 20px !important;
+        white-space: normal !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-pairs .card-pair {
+        width: 68px !important;
+        height: 95px !important;
+    }
+    
+    .table-pairs .card-pair .card {
+        width: 68px !important;
+        height: 95px !important;
+    }
+    
+    .table-pairs .card-pair .card:first-child {
+        width: 68px !important;
+        height: 95px !important;
+    }
+    
+    .table-pairs .card-pair .card:last-child {
+        width: 68px !important;
+        height: 95px !important;
+        top: 10px !important;
+        left: 10px !important;
+    }
+    
+    .table-pairs .card-pair .card-placeholder {
+        width: 68px !important;
+        height: 95px !important;
+        top: 10px !important;
+        left: 10px !important;
+        font-size: 24px !important;
+    }
+    
+    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+        font-size: 28px !important;
+    }
+    
+    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+        font-size: 34px !important;
+    }
+    
+    .table-pairs {
+        gap: 14px !important;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    .table-pairs .card-pair {
+        width: 60px !important;
+        height: 84px !important;
+    }
+    
+    .table-pairs .card-pair .card {
+        width: 60px !important;
+        height: 84px !important;
+    }
+    
+    .table-pairs .card-pair .card:first-child {
+        width: 60px !important;
+        height: 84px !important;
+    }
+    
+    .table-pairs .card-pair .card:last-child {
+        width: 60px !important;
+        height: 84px !important;
+        top: 8px !important;
+        left: 8px !important;
+    }
+    
+    .table-pairs .card-pair .card-placeholder {
+        width: 60px !important;
+        height: 84px !important;
+        top: 8px !important;
+        left: 8px !important;
+        font-size: 20px !important;
+    }
+    
+    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+        font-size: 24px !important;
+    }
+    
+    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+        font-size: 28px !important;
+    }
+    
+    .table-pairs {
+        gap: 12px !important;
+    }
+}
+
+/* ========== АВТОМАТИЧЕСКОЕ УМЕНЬШЕНИЕ КАРТ НА СТОЛЕ ПРИ 4+ КАРТАХ ========== */
+.table-pairs .card-pair {
+    transition: all 0.3s ease;
+}
+
+.table-pairs .card-pair:nth-child(n+4) {
+    transform: scale(0.82);
+    margin: -8px -4px;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
+    transform: scale(0.85);
+    margin: -6px -3px;
+}
+
+body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
+    transform: scale(0.75);
+    margin: -10px -5px;
+}
+
+body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
+    transform: scale(0.68);
+    margin: -12px -6px;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+    font-size: calc(36px * 0.85) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+    font-size: calc(44px * 0.85) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-value:first-child {
+    font-size: calc(18px * 0.85) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-suit:first-of-type {
+    font-size: calc(18px * 0.85) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+    font-size: calc(36px * 0.75) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+    font-size: calc(44px * 0.75) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
+    font-size: calc(36px * 0.68) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
+    font-size: calc(44px * 0.68) !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs {
+    gap: 8px !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs {
+    gap: 4px !important;
+}
+
+body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs {
+    gap: 2px !important;
+}
+
+@media (max-width: 768px) {
+    body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
+        transform: scale(0.8);
+        margin: -4px -2px;
+    }
+    
+    body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
+        transform: scale(0.7);
+        margin: -8px -4px;
+    }
+    
+    body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
+        transform: scale(0.62);
+        margin: -10px -5px;
+    }
+}
+
+@media (max-width: 480px) {
+    body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
+        transform: scale(0.75);
+    }
+    
+    body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
+        transform: scale(0.65);
+    }
+    
+    body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
+        transform: scale(0.58);
+    }
+}
+
+/* ========== ИСПРАВЛЕНИЕ КАРТ ========== */
+@media (max-width: 767px) {
+    .card-top {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        top: 5px !important;
+        left: 5px !important;
+    }
+
+    .card-top .card-suit {
+        display: inline-block !important;
+        line-height: 1 !important;
+        margin-top: 3px !important;
+    }
+
+    .card-bottom {
+        position: absolute !important;
+        top: 25px !important;
+        left: 5px !important;
+        bottom: auto !important;
+        right: auto !important;
+        transform: none !important;
+        display: block !important;
+    }
+
+    .card-bottom .card-suit {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    .card-rank {
+        display: inline-block !important;
+        letter-spacing: -0.5px !important;
+    }
+}
+
+/* ========== ТУРНИРНАЯ ТАБЛИЦА ДЛЯ МОБИЛЬНЫХ ========== */
+@media (max-width: 768px) {
+    button#toggleLeaderboardBtn,
+    #toggleLeaderboardBtn,
+    button[id="toggleLeaderboardBtn"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+    }
+    
+    div#crownToggleBtn,
+    .crown-toggle-btn {
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        width: 50px !important;
+        height: 50px !important;
+        background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
+        border: 2px solid var(--eastern-gold) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        z-index: 900 !important;
+        font-size: 28px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(230, 180, 34, 0.3) !important;
+        transition: all 0.3s ease !important;
+        backdrop-filter: blur(8px) !important;
+    }
+    
+    div#crownToggleBtn:hover,
+    .crown-toggle-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+        border-color: var(--gold-light);
+    }
+    
+    div#crownToggleBtn:active,
+    .crown-toggle-btn:active {
+        transform: scale(0.95);
+    }
+    
+    #tournamentDisplay {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        left: 20px;
+        width: auto;
+        min-width: auto;
+        max-height: 80vh;
+        background: rgba(10, 6, 4, 0.97);
+        backdrop-filter: blur(16px);
+        border: 2px solid #d4af37;
+        border-radius: 20px;
+        padding: 15px 20px;
+        z-index: 950;
+        box-shadow: 0 8px 35px rgba(0, 0, 0, 0.6);
+        transform: translateY(-20px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        overflow-y: auto;
+    }
+    
+    #tournamentDisplay.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+    
+    #tournamentDisplay .mobile-close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid #e6b422;
+        border-radius: 50%;
+        color: #e6b422;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        z-index: 10002;
+    }
+    
+    #tournamentDisplay .mobile-close-btn:hover {
+        background: var(--ruby);
+        color: #fff;
+        transform: scale(1.05);
+    }
+    
+    #tournamentDisplay .mobile-close-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* ========== НА ПК КНОПКА ЗАКРЫТИЯ СКРЫТА ========== */
+@media (min-width: 769px) {
+    button#toggleLeaderboardBtn,
+    #toggleLeaderboardBtn,
+    div#crownToggleBtn,
+    .crown-toggle-btn {
+        display: none !important;
+    }
+    
+    #tournamentDisplay .mobile-close-btn {
+        display: none !important;
+    }
+    
+    #tournamentDisplay {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        pointer-events: all !important;
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        width: auto !important;
+        min-width: 260px !important;
+    }
+}
+
+/* ========== ИКОНКА ЧАТА ========== */
+.chat-icon-mobile {
+    display: none;
+    font-size: 24px;
+}
+
+@media (max-width: 768px) {
+    .chat-container.collapsed {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 50% !important;
+        bottom: 15px !important;
+        left: 15px !important;
+        overflow: hidden !important;
+        border: 2px solid #e6b422 !important;
+        padding: 0 !important;
+        background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 0 2px rgba(230, 180, 34, 0.3) !important;
+        display: block !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .chat-container.collapsed .chat-header {
+        height: 100% !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    .chat-container.collapsed .chat-header h3 {
+        display: none !important;
+    }
+    
+    .chat-container.collapsed .chat-header .chat-status {
+        display: none !important;
+    }
+    
+    .chat-container.collapsed .chat-icon-mobile {
+        display: block !important;
+        font-size: 26px !important;
+        color: #e6b422 !important;
+    }
+
+    .chat-container.collapsed .chat-messages,
+    .chat-container.collapsed .chat-input-area,
+    .chat-container.collapsed .sticker-panel {
+        display: none !important;
+    }
+    
+    .chat-container:not(.collapsed) {
+        position: fixed !important;
+        bottom: 15px !important;
+        left: 15px !important;
+        width: calc(100% - 30px) !important;
+        max-width: 340px !important;
+        height: auto !important;
+        min-height: 320px !important;
+        border-radius: 20px !important;
+        z-index: 2000 !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    .chat-container:not(.collapsed) .chat-icon-mobile {
+        display: none !important;
+    }
+    
+    .chat-container:not(.collapsed) .chat-header h3 {
+        display: block !important;
+    }
+    
+    .chat-container:not(.collapsed) .chat-messages,
+    .chat-container:not(.collapsed) .chat-input-area {
+        animation: chatSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @keyframes chatSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-container.collapsed {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .chat-container.collapsed .chat-icon-mobile {
+        font-size: 22px !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .chat-icon-mobile {
+        display: none !important;
+    }
+    
+    .chat-container.collapsed .chat-icon-mobile {
+        display: none !important;
+    }
+    
+    .chat-container.collapsed .chat-messages,
+    .chat-container.collapsed .chat-input-area,
+    .chat-container.collapsed .sticker-panel {
+        display: none !important;
+    }
+    
+    .chat-container:not(.collapsed) .chat-messages,
+    .chat-container:not(.collapsed) .chat-input-area {
+        display: flex !important;
+    }
+}
+
+/* ========== УВЕЛИЧЕНИЕ СМАЙЛИКА В КНОПКЕ СТИКЕРОВ ========== */
+@media (max-width: 768px) {
+    .sticker-btn {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 24px !important;
+        padding: 0 !important;
+        background: none !important;
+        border: 1.5px solid #d4af37 !important;
+        border-radius: 50% !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .sticker-btn:hover {
+        background: rgba(212, 175, 55, 0.2) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    .sticker-btn:active {
+        transform: scale(0.95) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .sticker-btn {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 20px !important;
+    }
+}
+
+/* ========== АДАПТИВНЫЕ МЕДИА-ЗАПРОСЫ ========== */
 @media (max-width: 1024px) and (orientation: landscape) {
     .game-board {
         gap: 8px;
@@ -1158,1174 +1994,5 @@ body::before {
     }
     .player-right .badge-info {
         transform: none;
-    }
-}
-
-/* ========== ТУРНИРНАЯ ТАБЛИЦА ДЛЯ МОБИЛЬНЫХ ========== */
-@media (max-width: 768px) {
-    button#toggleLeaderboardBtn,
-    #toggleLeaderboardBtn,
-    button[id="toggleLeaderboardBtn"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        position: absolute !important;
-    }
-    
-    div#crownToggleBtn,
-    .crown-toggle-btn {
-        position: fixed !important;
-        top: 20px !important;
-        right: 20px !important;
-        width: 50px !important;
-        height: 50px !important;
-        background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
-        border: 2px solid var(--eastern-gold) !important;
-        border-radius: 50% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        cursor: pointer !important;
-        z-index: 900 !important;
-        font-size: 28px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(230, 180, 34, 0.3) !important;
-        transition: all 0.3s ease !important;
-        backdrop-filter: blur(8px) !important;
-    }
-    
-    div#crownToggleBtn:hover,
-    .crown-toggle-btn:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
-        border-color: var(--gold-light);
-    }
-    
-    div#crownToggleBtn:active,
-    .crown-toggle-btn:active {
-        transform: scale(0.95);
-    }
-    
-    #tournamentDisplay {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        left: 20px;
-        width: auto;
-        min-width: auto;
-        max-height: 80vh;
-        background: rgba(10, 6, 4, 0.97);
-        backdrop-filter: blur(16px);
-        border: 2px solid #d4af37;
-        border-radius: 20px;
-        padding: 15px 20px;
-        z-index: 950;
-        box-shadow: 0 8px 35px rgba(0, 0, 0, 0.6);
-        transform: translateY(-20px);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: none;
-        overflow-y: auto;
-    }
-    
-    #tournamentDisplay.active {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-        pointer-events: all;
-    }
-    
-    #tournamentDisplay .mobile-close-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 32px;
-        height: 32px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 1px solid #e6b422;
-        border-radius: 50%;
-        color: #e6b422;
-        font-size: 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        z-index: 10002;
-    }
-    
-    #tournamentDisplay .mobile-close-btn:hover {
-        background: var(--ruby);
-        color: #fff;
-        transform: scale(1.05);
-    }
-    
-    #tournamentDisplay .mobile-close-btn:active {
-        transform: scale(0.95);
-    }
-}
-
-/* ========== НА ПК КНОПКА ЗАКРЫТИЯ СКРЫТА ========== */
-@media (min-width: 769px) {
-    button#toggleLeaderboardBtn,
-    #toggleLeaderboardBtn,
-    div#crownToggleBtn,
-    .crown-toggle-btn {
-        display: none !important;
-    }
-    
-    /* Скрываем кнопку закрытия на ПК */
-    #tournamentDisplay .mobile-close-btn {
-        display: none !important;
-    }
-    
-    #tournamentDisplay {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: none !important;
-        pointer-events: all !important;
-        position: fixed !important;
-        top: 20px !important;
-        right: 20px !important;
-        left: auto !important;
-        width: auto !important;
-        min-width: 260px !important;
-    }
-}
-
-/* ========== УВЕЛИЧЕНИЕ КАРТ НА СТОЛЕ ДЛЯ ТЕЛЕФОНОВ ========== */
-@media (max-width: 768px) {
-    .table-pairs .card-pair {
-        width: 75px !important;
-        height: 105px !important;
-    }
-    
-    .table-pairs .card-pair .card {
-        width: 75px !important;
-        height: 105px !important;
-    }
-    
-    .table-pairs .card-pair .card:first-child {
-        position: relative;
-        z-index: 1;
-        width: 75px !important;
-        height: 105px !important;
-    }
-    
-    .table-pairs .card-pair .card:last-child {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        z-index: 2;
-        transform: rotate(5deg);
-        width: 75px !important;
-        height: 105px !important;
-    }
-    
-    .table-pairs .card-pair .card-placeholder {
-        width: 75px !important;
-        height: 105px !important;
-        top: 12px !important;
-        left: 12px !important;
-        font-size: 28px !important;
-    }
-    
-    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-        font-size: 32px !important;
-    }
-    
-    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-        font-size: 38px !important;
-    }
-    
-    .table-pairs .card .card-value:first-child {
-        font-size: 14px !important;
-        top: 6px !important;
-        left: 6px !important;
-    }
-    
-    .table-pairs .card .card-suit:first-of-type {
-        font-size: 14px !important;
-        top: 6px !important;
-        left: 28px !important;
-    }
-    
-    .table-pairs {
-        gap: 18px !important;
-        padding: 12px !important;
-    }
-    
-    #tableZone .empty-text {
-        font-size: 12px !important;
-        padding: 12px 20px !important;
-        white-space: normal !important;
-        text-align: center !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .table-pairs .card-pair {
-        width: 68px !important;
-        height: 95px !important;
-    }
-    
-    .table-pairs .card-pair .card {
-        width: 68px !important;
-        height: 95px !important;
-    }
-    
-    .table-pairs .card-pair .card:first-child {
-        width: 68px !important;
-        height: 95px !important;
-    }
-    
-    .table-pairs .card-pair .card:last-child {
-        width: 68px !important;
-        height: 95px !important;
-        top: 10px !important;
-        left: 10px !important;
-    }
-    
-    .table-pairs .card-pair .card-placeholder {
-        width: 68px !important;
-        height: 95px !important;
-        top: 10px !important;
-        left: 10px !important;
-        font-size: 24px !important;
-    }
-    
-    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-        font-size: 28px !important;
-    }
-    
-    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-        font-size: 34px !important;
-    }
-    
-    .table-pairs {
-        gap: 14px !important;
-    }
-}
-
-@media (max-width: 900px) and (orientation: landscape) {
-    .table-pairs .card-pair {
-        width: 60px !important;
-        height: 84px !important;
-    }
-    
-    .table-pairs .card-pair .card {
-        width: 60px !important;
-        height: 84px !important;
-    }
-    
-    .table-pairs .card-pair .card:first-child {
-        width: 60px !important;
-        height: 84px !important;
-    }
-    
-    .table-pairs .card-pair .card:last-child {
-        width: 60px !important;
-        height: 84px !important;
-        top: 8px !important;
-        left: 8px !important;
-    }
-    
-    .table-pairs .card-pair .card-placeholder {
-        width: 60px !important;
-        height: 84px !important;
-        top: 8px !important;
-        left: 8px !important;
-        font-size: 20px !important;
-    }
-    
-    .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-        font-size: 24px !important;
-    }
-    
-    .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-        font-size: 28px !important;
-    }
-    
-    .table-pairs {
-        gap: 12px !important;
-    }
-}
-
-/* ========== ДОБАВЛЕННЫЕ СТИЛИ ДЛЯ ИКОНКИ ЧАТА НА ТЕЛЕФОНЕ ========== */
-/* Иконка чата для мобильных устройств - скрыта по умолчанию */
-.chat-icon-mobile {
-    display: none;
-    font-size: 24px;
-}
-
-/* Когда чат свернут на телефоне - показываем иконку */
-@media (max-width: 768px) {
-    .chat-container.collapsed {
-        width: 50px !important;
-        height: 50px !important;
-        border-radius: 50% !important;
-        bottom: 15px !important;
-        left: 15px !important;
-        overflow: hidden !important;
-        border: 2px solid #e6b422 !important;
-        padding: 0 !important;
-        background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5), 0 0 0 2px rgba(230, 180, 34, 0.3) !important;
-        display: block !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-
-    .chat-container.collapsed .chat-header {
-        height: 100% !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: transparent !important;
-        border: none !important;
-    }
-    
-    /* Скрываем текст и статус в свернутом чате */
-    .chat-container.collapsed .chat-header h3 {
-        display: none !important;
-    }
-    
-    .chat-container.collapsed .chat-header .chat-status {
-        display: none !important;
-    }
-    
-    /* Показываем иконку в свернутом чате */
-    .chat-container.collapsed .chat-icon-mobile {
-        display: block !important;
-        font-size: 26px !important;
-        color: #e6b422 !important;
-    }
-
-    /* Скрываем содержимое чата когда он свернут */
-    .chat-container.collapsed .chat-messages,
-    .chat-container.collapsed .chat-input-area,
-    .chat-container.collapsed .sticker-panel {
-        display: none !important;
-    }
-    
-    /* Когда чат открыт - показываем как обычно */
-    .chat-container:not(.collapsed) {
-        position: fixed !important;
-        bottom: 15px !important;
-        left: 15px !important;
-        width: calc(100% - 30px) !important;
-        max-width: 340px !important;
-        height: auto !important;
-        min-height: 320px !important;
-        border-radius: 20px !important;
-        z-index: 2000 !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    }
-    
-    /* Скрываем иконку когда чат открыт */
-    .chat-container:not(.collapsed) .chat-icon-mobile {
-        display: none !important;
-    }
-    
-    /* Показываем заголовок когда чат открыт */
-    .chat-container:not(.collapsed) .chat-header h3 {
-        display: block !important;
-    }
-    
-    /* Плавная анимация для контента чата при открытии */
-    .chat-container:not(.collapsed) .chat-messages,
-    .chat-container:not(.collapsed) .chat-input-area {
-        animation: chatSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    @keyframes chatSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-}
-
-/* Для маленьких телефонов (до 480px) */
-@media (max-width: 480px) {
-    .chat-container.collapsed {
-        width: 45px !important;
-        height: 45px !important;
-    }
-    
-    .chat-container.collapsed .chat-icon-mobile {
-        font-size: 22px !important;
-    }
-}
-
-/* На ПК иконка НИКОГДА не показывается и чат работает как прежде */
-@media (min-width: 769px) {
-    .chat-icon-mobile {
-        display: none !important;
-    }
-    
-    .chat-container.collapsed .chat-icon-mobile {
-        display: none !important;
-    }
-    
-    /* На ПК чат сворачивается как раньше - через display */
-    .chat-container.collapsed .chat-messages,
-    .chat-container.collapsed .chat-input-area,
-    .chat-container.collapsed .sticker-panel {
-        display: none !important;
-    }
-    
-    .chat-container:not(.collapsed) .chat-messages,
-    .chat-container:not(.collapsed) .chat-input-area {
-        display: flex !important;
-    }
-}
-
-/* ========== УВЕЛИЧЕНИЕ СМАЙЛИКА В КНОПКЕ СТИКЕРОВ ТОЛЬКО ДЛЯ ТЕЛЕФОНА ========== */
-@media (max-width: 768px) {
-    .sticker-btn {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 24px !important;
-        padding: 0 !important;
-        background: none !important;
-        border: 1.5px solid #d4af37 !important;
-        border-radius: 50% !important;
-        cursor: pointer !important;
-        transition: all 0.2s ease !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-    }
-    
-    .sticker-btn:hover {
-        background: rgba(212, 175, 55, 0.2) !important;
-        transform: scale(1.05) !important;
-    }
-    
-    .sticker-btn:active {
-        transform: scale(0.95) !important;
-    }
-}
-
-/* Для очень маленьких телефонов (до 480px) */
-@media (max-width: 480px) {
-    .sticker-btn {
-        width: 34px !important;
-        height: 34px !important;
-        font-size: 20px !important;
-    }
-}
-
-/* ========== ТОЛЬКО ДЛЯ РЕЖИМА ТРОИХ НА ТЕЛЕФОНЕ ========== */
-@media (max-width: 767px) {
-    /* Уведомление */
-    .players-3 #statusBar.status-toast {
-        bottom: 195px !important;
-        top: auto !important;
-        left: 8px !important;
-        right: auto !important;
-        transform: none !important;
-        width: auto !important;
-        max-width: none !important;
-        z-index: 1150 !important;
-    }
-    
-    /* КНОПКИ - справа */
-    .players-3 div.action-buttons,
-    .players-3 .action-buttons,
-    .players-3 .action-buttons[style] {
-        position: fixed !important;
-        bottom: 195px !important;
-        left: auto !important;
-        right: 20px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 10px !important;
-        z-index: 1200 !important;
-        background: none !important;
-        background-color: transparent !important;
-        backdrop-filter: none !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        width: auto !important;
-        max-width: auto !important;
-        min-width: 0 !important;
-        opacity: 1 !important;
-    }
-    
-    /* Стили кнопок для 3 игроков */
-    .players-3 div.action-buttons .action-btn,
-    .players-3 .action-buttons .action-btn,
-    .players-3 .action-btn {
-        background: linear-gradient(135deg, #dc3545, #a00020) !important;
-        color: white !important;
-        border: none !important;
-        padding: 8px 18px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        border-radius: 24px !important;
-        white-space: nowrap !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        text-transform: uppercase !important;
-        font-family: 'Oswald', sans-serif !important;
-        cursor: pointer !important;
-    }
-    
-    .players-3 div.action-buttons .action-btn-take,
-    .players-3 .action-buttons .action-btn-take,
-    .players-3 .action-btn-take {
-        background: linear-gradient(135deg, #8b1a1a, #5c0e0e) !important;
-        color: #ffd700 !important;
-        border: 1px solid #e6b422 !important;
-        padding: 8px 18px !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        border-radius: 24px !important;
-        white-space: nowrap !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        text-transform: uppercase !important;
-        font-family: 'Oswald', sans-serif !important;
-        cursor: pointer !important;
-    }
-    
-    /* Для маленьких экранов (только для 3 игроков) */
-    @media (max-width: 480px) {
-        .players-3 div.action-buttons,
-        .players-3 .action-buttons,
-        .players-3 .action-buttons[style] {
-            right: 15px !important;
-            gap: 8px !important;
-            bottom: 180px !important;
-        }
-        
-        .players-3 #statusBar.status-toast {
-            bottom: 180px !important;
-        }
-        
-        .players-3 div.action-buttons .action-btn,
-        .players-3 .action-buttons .action-btn,
-        .players-3 .action-btn,
-        .players-3 div.action-buttons .action-btn-take,
-        .players-3 .action-buttons .action-btn-take,
-        .players-3 .action-btn-take {
-            padding: 6px 14px !important;
-            font-size: 10px !important;
-        }
-    }
-    
-    @media (max-width: 380px) {
-        .players-3 div.action-buttons,
-        .players-3 .action-buttons,
-        .players-3 .action-buttons[style] {
-            right: 10px !important;
-            gap: 6px !important;
-            bottom: 165px !important;
-        }
-        
-        .players-3 #statusBar.status-toast {
-            bottom: 165px !important;
-            font-size: 9px !important;
-            padding: 6px 12px !important;
-        }
-        
-        .players-3 div.action-buttons .action-btn,
-        .players-3 .action-buttons .action-btn,
-        .players-3 .action-btn,
-        .players-3 div.action-buttons .action-btn-take,
-        .players-3 .action-buttons .action-btn-take,
-        .players-3 .action-btn-take {
-            padding: 5px 10px !important;
-            font-size: 9px !important;
-        }
-    }
-}
-
-/* ========== ДИНАМИЧЕСКОЕ ПОЛОЖЕНИЕ КНОПОК В ЗАВИСИМОСТИ ОТ КОЛИЧЕСТВА КАРТ (ТОЛЬКО ДЛЯ ТЕЛЕФОНА, РЕЖИМ ТРОИХ) ========== */
-@media (max-width: 767px) {
-    /* ----- ДЛЯ 10 КАРТ И МЕНЬШЕ (cards-few) — опускаем плотно к картам ----- */
-    .players-3 .cards-few#statusBar.status-toast,
-    .players-3 .cards-few.status-toast {
-        bottom: 125px !important;
-    }
-    
-    .players-3 .cards-few.action-buttons,
-    .players-3 .cards-few.action-buttons[style] {
-        bottom: 125px !important;
-    }
-    
-    /* ----- ДЛЯ 11-12 КАРТ (cards-many) — оставляем повыше (как было идеально) ----- */
-    .players-3 .cards-many#statusBar.status-toast,
-    .players-3 .cards-many.status-toast {
-        bottom: 195px !important;
-    }
-    
-    .players-3 .cards-many.action-buttons,
-    .players-3 .cards-many.action-buttons[style] {
-        bottom: 195px !important;
-    }
-    
-    /* Адаптация под средние экраны телефонов (до 480px) */
-    @media (max-width: 480px) {
-        .players-3 .cards-few#statusBar.status-toast,
-        .players-3 .cards-few.status-toast {
-            bottom: 115px !important;
-        }
-        
-        .players-3 .cards-few.action-buttons,
-        .players-3 .cards-few.action-buttons[style] {
-            bottom: 115px !important;
-        }
-        
-        .players-3 .cards-many#statusBar.status-toast,
-        .players-3 .cards-many.status-toast {
-            bottom: 180px !important;
-        }
-        
-        .players-3 .cards-many.action-buttons,
-        .players-3 .cards-many.action-buttons[style] {
-            bottom: 180px !important;
-        }
-    }
-    
-    /* Адаптация под совсем маленькие телефоны (до 380px) */
-    @media (max-width: 380px) {
-        .players-3 .cards-few#statusBar.status-toast,
-        .players-3 .cards-few.status-toast {
-            bottom: 105px !important;
-        }
-        
-        .players-3 .cards-few.action-buttons,
-        .players-3 .cards-few.action-buttons[style] {
-            bottom: 105px !important;
-        }
-        
-        .players-3 .cards-many#statusBar.status-toast,
-        .players-3 .cards-many.status-toast {
-            bottom: 165px !important;
-        }
-        
-        .players-3 .cards-many.action-buttons,
-        .players-3 .cards-many.action-buttons[style] {
-            bottom: 165px !important;
-        }
-    }
-}
-
-/* ========== ДЛЯ ТЕЛЕФОНА: два игрока рядом вверху (только для режима 3 игроков) ========== */
-@media (max-width: 767px) {
-    /* Только для режима с 3 игроками */
-    .players-3 .game-board {
-        position: relative;
-    }
-    
-    /* Верхний игрок - слева */
-    .players-3 .player-top {
-        position: absolute !important;
-        top: 55px !important;
-        left: 10px !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
-        min-width: 110px !important;
-        max-width: 42% !important;
-        z-index: 10 !important;
-    }
-    
-    /* Правый игрок - справа (рядом с верхним) */
-    .players-3 .player-right {
-        position: absolute !important;
-        top: 55px !important;
-        right: 10px !important;
-        left: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        width: auto !important;
-        min-width: 110px !important;
-        max-width: 42% !important;
-        z-index: 10 !important;
-        display: flex !important;
-    }
-    
-    /* Отключаем rotate для правого игрока */
-    .players-3 .player-right .badge-info {
-        transform: none !important;
-    }
-    
-    /* Уменьшаем размер бейджей */
-    .players-3 .player-badge {
-        padding: 5px 10px !important;
-        border-radius: 25px !important;
-        background: linear-gradient(145deg, rgba(26, 71, 49, 0.95) 0%, rgba(14, 42, 26, 0.98) 100%) !important;
-        backdrop-filter: blur(12px) !important;
-    }
-    
-    .players-3 .player-name {
-        font-size: 10px !important;
-        white-space: nowrap !important;
-    }
-    
-    .players-3 .player-cards {
-        font-size: 8px !important;
-    }
-    
-    .players-3 .role-badge {
-        font-size: 7px !important;
-        padding: 2px 5px !important;
-        margin-top: 2px !important;
-    }
-}
-
-/* ========== АВТОМАТИЧЕСКОЕ УМЕНЬШЕНИЕ КАРТ НА СТОЛЕ ПРИ 4+ КАРТАХ ========== */
-/* Работает на телефонах и ПК */
-
-/* Когда на столе 4 карты и больше - уменьшаем карты */
-.table-pairs:has(.card-pair:nth-child(4)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(5)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(6)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(7)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(8)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(9)) .card-pair,
-.table-pairs:has(.card-pair:nth-child(10)) .card-pair {
-    --card-scale: 0.85;
-}
-
-/* Базовое масштабирование для всех карт на столе при 4+ картах */
-.table-pairs .card-pair {
-    transition: all 0.3s ease;
-}
-
-/* Когда в .table-pairs больше 3 карт (4 и более) */
-.table-pairs .card-pair:nth-child(n+4) {
-    transform: scale(0.82);
-    margin: -8px -4px;
-}
-
-/* Для всех карт в паре, если общее количество карт 4+ */
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
-    transform: scale(0.85);
-    margin: -6px -3px;
-}
-
-/* Ещё сильнее уменьшаем при 6+ картах */
-body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
-    transform: scale(0.75);
-    margin: -10px -5px;
-}
-
-/* Максимальное уменьшение при 8+ картах */
-body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
-    transform: scale(0.68);
-    margin: -12px -6px;
-}
-
-/* Уменьшаем шрифты на картах пропорционально */
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-    font-size: calc(36px * 0.85) !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-    font-size: calc(44px * 0.85) !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-value:first-child {
-    font-size: calc(18px * 0.85) !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card .card-suit:first-of-type {
-    font-size: calc(18px * 0.85) !important;
-}
-
-/* При 6+ картах - ещё меньше шрифты */
-body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-    font-size: calc(36px * 0.75) !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-    font-size: calc(44px * 0.75) !important;
-}
-
-/* При 8+ картах - максимальное уменьшение шрифтов */
-body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card .card-value:not(:first-child):not(:last-child) {
-    font-size: calc(36px * 0.68) !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card .card-suit:not(:first-of-type):not(:last-of-type) {
-    font-size: calc(44px * 0.68) !important;
-}
-
-/* Уменьшаем отступы между картами при большом количестве */
-body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs {
-    gap: 8px !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs {
-    gap: 4px !important;
-}
-
-body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs {
-    gap: 2px !important;
-}
-
-/* Для мобильных устройств - дополнительные корректировки */
-@media (max-width: 768px) {
-    body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
-        transform: scale(0.8);
-        margin: -4px -2px;
-    }
-    
-    body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
-        transform: scale(0.7);
-        margin: -8px -4px;
-    }
-    
-    body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
-        transform: scale(0.62);
-        margin: -10px -5px;
-    }
-}
-
-/* Для очень маленьких телефонов */
-@media (max-width: 480px) {
-    body:has(.table-pairs .card-pair:nth-child(4)) .table-pairs .card-pair {
-        transform: scale(0.75);
-    }
-    
-    body:has(.table-pairs .card-pair:nth-child(6)) .table-pairs .card-pair {
-        transform: scale(0.65);
-    }
-    
-    body:has(.table-pairs .card-pair:nth-child(8)) .table-pairs .card-pair {
-        transform: scale(0.58);
-    }
-}
-
-/* ========== ИСПРАВЛЕНИЕ КАРТ (ВЕРСИЯ 3) ========== */
-@media (max-width: 767px) {
-
-    /* 1. ВЕРХНЯЯ ЧАСТЬ: Центрируем масть относительно буквы */
-    .card-top {
-        display: flex !important;
-        align-items: center !important; /* Это выравнивает их по одной горизонтальной линии */
-        gap: 4px !important; /* Расстояние между цифрой и мастью */
-        top: 5px !important;
-        left: 5px !important;
-    }
-
-    .card-top .card-suit {
-        display: inline-block !important;
-        line-height: 1 !important;
-        margin-top: 3px !important; /* Смещаем масть чуть ниже, чтобы она стала ровно по центру буквы */
-    }
-
-    /* 2. НИЖНЯЯ ЧАСТЬ: Убираем масть и опускаем цифру */
-    .card-bottom {
-        position: absolute !important;
-        top: 25px !important; /* Прямое указание: быть под верхней цифрой */
-        left: 5px !important;
-        bottom: auto !important;
-        right: auto !important;
-        transform: none !important; /* Убираем переворот цифры */
-        display: block !important;
-    }
-
-    /* Полностью скрываем масть внизу, чтобы не мешалась */
-    .card-bottom .card-suit {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    /* Дополнительно для десятки, чтобы масть не прилипала */
-    .card-rank {
-        display: inline-block !important;
-        letter-spacing: -0.5px !important;
-    }
-}
-
-/* ========== СБЛИЖЕНИЕ ВЕРХНИХ ИГРОКОВ (ТОЛЬКО ТЕЛЕФОН, РЕЖИМ 3 ИГРОКА) ========== */
-@media (max-width: 767px) {
-    
-    /* ЛЕВЫЙ ИГРОК — сдвигаем ближе к центру (вправо) */
-    .players-3 .player-slot.top-left,
-    .players-3 .player-slot-left,
-    .players-3 .player-slot-1,
-    .players-3 .player-slot[data-pos="1"],
-    .players-3 .player-left,
-    .players-3 .player-1 {
-        left: 48px !important; /* Было около 10-15px, теперь аккуратно сдвинут к центру */
-    }
-
-    /* ПРАВЫЙ ИГРОК — сдвигаем ближе к центру (влево) */
-    .players-3 .player-slot.top-right,
-    .players-3 .player-slot-right,
-    .players-3 .player-slot-2,
-    .players-3 .player-slot[data-pos="2"],
-    .players-3 .player-right,
-    .players-3 .player-2 {
-        right: 48px !important; /* Было около 10-15px, теперь аккуратно сдвинут к центру */
-    }
-}
-
-/* Адаптация для очень маленьких экранов (до 380px), чтобы панели не накладывались на стол */
-@media (max-width: 380px) {
-    .players-3 .player-slot.top-left,
-    .players-3 .player-slot-left,
-    .players-3 .player-slot-1,
-    .players-3 .player-slot[data-pos="1"] {
-        left: 35px !important; /* На узких экранах сдвигаем чуть меньше, чтобы сберечь место */
-    }
-
-    .players-3 .player-slot.top-right,
-    .players-3 .player-slot-right,
-    .players-3 .player-slot-2,
-    .players-3 .player-slot[data-pos="2"] {
-        right: 35px !important;
-    }
-}
-
-/* =========================================================================
-   === УНИВЕРСАЛЬНЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНА (РАБОТАЮТ ДЛЯ 2 ИГРОКОВ ПО ДЕФОЛТУ) ===
-   ========================================================================= */
-@media (max-width: 767px) {
-    /* Базовое положение уведомления */
-    #statusBar.status-toast {
-        position: fixed !important;
-        bottom: 195px !important; 
-        top: auto !important;
-        left: 8px !important;
-        right: auto !important;
-        transform: none !important;
-        width: auto !important;
-        max-width: none !important;
-        z-index: 1150 !important;
-    }
-    
-    /* Базовое положение кнопок действий - СПРАВА */
-    div.action-buttons,
-    .action-buttons,
-    .action-buttons[style] {
-        position: fixed !important;
-        bottom: 195px !important; 
-        left: auto !important;
-        right: 20px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 10px !important;
-        z-index: 1200 !important;
-        background: none !important;
-        background-color: transparent !important;
-        backdrop-filter: none !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        width: auto !important;
-        max-width: auto !important;
-        min-width: 0 !important;
-        opacity: 1 !important;
-    }
-    
-    /* Стили кнопок */
-    div.action-buttons .action-btn,
-    .action-buttons .action-btn,
-    .action-btn {
-        background: linear-gradient(135deg, #dc3545, #a00020) !important;
-        color: white !important;
-        border: none !important;
-        padding: 8px 18px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        border-radius: 24px !important;
-        white-space: nowrap !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        text-transform: uppercase !important;
-        font-family: 'Oswald', sans-serif !important;
-        cursor: pointer !important;
-    }
-    
-    div.action-buttons .action-btn-take,
-    .action-buttons .action-btn-take,
-    .action-btn-take {
-        background: linear-gradient(135deg, #8b1a1a, #5c0e0e) !important;
-        color: #ffd700 !important;
-        border: 1px solid #e6b422 !important;
-        padding: 8px 18px !important;
-        font-size: 12px !important;
-        font-weight: 700 !important;
-        border-radius: 24px !important;
-        white-space: nowrap !important;
-        letter-spacing: 1px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-        text-transform: uppercase !important;
-        font-family: 'Oswald', sans-serif !important;
-        cursor: pointer !important;
-    }
-    
-    /* Адаптация под средние экраны (до 480px) */
-    @media (max-width: 480px) {
-        div.action-buttons,
-        .action-buttons,
-        .action-buttons[style] {
-            right: 15px !important;
-            gap: 8px !important;
-            bottom: 180px !important;
-        }
-        
-        #statusBar.status-toast {
-            bottom: 180px !important;
-        }
-        
-        div.action-buttons .action-btn,
-        .action-buttons .action-btn,
-        .action-btn,
-        div.action-buttons .action-btn-take,
-        .action-buttons .action-btn-take,
-        .action-btn-take {
-            padding: 6px 14px !important;
-            font-size: 10px !important;
-        }
-    }
-    
-    /* Адаптация под маленькие экраны (до 380px) */
-    @media (max-width: 380px) {
-        div.action-buttons,
-        .action-buttons,
-        .action-buttons[style] {
-            right: 10px !important;
-            gap: 6px !important;
-            bottom: 165px !important;
-        }
-        
-        #statusBar.status-toast {
-            bottom: 165px !important;
-            font-size: 9px !important;
-            padding: 6px 12px !important;
-        }
-        
-        div.action-buttons .action-btn,
-        .action-buttons .action-btn,
-        .action-btn,
-        div.action-buttons .action-btn-take,
-        .action-buttons .action-btn-take,
-        .action-btn-take {
-            padding: 5px 10px !important;
-            font-size: 9px !important;
-        }
-    }
-}
-
-/* =========================================================================
-   === ДИНАМИЧЕСКИЕ ВЫСОТЫ КНОПОК ДЛЯ РЕЖИМА ПО УМОЛЧАНИЮ (МЕНЬШЕ/БОЛЬШЕ 11 КАРТ) ===
-   ========================================================================= */
-@media (max-width: 767px) {
-    /* ----- МЕНЬШЕ 11 КАРТ (cards-few: 10 и меньше) — опускаем вниз ----- */
-    .cards-few#statusBar.status-toast,
-    .cards-few.status-toast {
-        bottom: 125px !important; 
-    }
-    
-    .cards-few.action-buttons,
-    .cards-few.action-buttons[style] {
-        bottom: 125px !important; 
-    }
-    
-    /* ----- 11 КАРТ И БОЛЬШЕ (cards-many) — поднимаем наверх ----- */
-    .cards-many#statusBar.status-toast,
-    .cards-many.status-toast {
-        bottom: 195px !important; 
-    }
-    
-    .cards-many.action-buttons,
-    .cards-many.action-buttons[style] {
-        bottom: 195px !important; 
-    }
-    
-    /* Адаптация под средние экраны (до 480px) */
-    @media (max-width: 480px) {
-        .cards-few#statusBar.status-toast,
-        .cards-few.status-toast {
-            bottom: 115px !important; 
-        }
-        
-        .cards-few.action-buttons,
-        .cards-few.action-buttons[style] {
-            bottom: 115px !important; 
-        }
-        
-        .cards-many#statusBar.status-toast,
-        .cards-many.status-toast {
-            bottom: 180px !important; 
-        }
-        
-        .cards-many.action-buttons,
-        .cards-many.action-buttons[style] {
-            bottom: 180px !important; 
-        }
-    }
-    
-    /* Адаптация под маленькие экраны (до 380px) */
-    @media (max-width: 380px) {
-        .cards-few#statusBar.status-toast,
-        .cards-few.status-toast {
-            bottom: 105px !important; 
-        }
-        
-        .cards-few.action-buttons,
-        .cards-few.action-buttons[style] {
-            bottom: 105px !important; 
-        }
-        
-        .cards-many#statusBar.status-toast,
-        .cards-many.status-toast {
-            bottom: 165px !important; 
-        }
-        
-        .cards-many.action-buttons,
-        .cards-many.action-buttons[style] {
-            bottom: 165px !important; 
-        }
-    }
-}
-
-/* ========== ДЛЯ ПК: правый игрок остаётся на месте (справа), но без поворота ========== */
-/* Только для ПК (ширина экрана 768px и больше) */
-@media (min-width: 768px) {
-    /* Правый игрок остаётся в своей ячейке (grid-column: 3, grid-row: 2), 
-       но убираем поворот, чтобы он был как верхний (вертикально) */
-    .player-right {
-        transform: none !important;  /* Убираем rotate(90deg) */
-    }
-    
-    /* Текст внутри тоже без поворота */
-    .player-right .badge-info {
-        transform: none !important;
-    }
-}
-
-/* На телефонах (до 768px) оставляем как было — с поворотом */
-@media (max-width: 767px) {
-    .player-right {
-        transform: rotate(90deg) !important;
-    }
-    
-    .player-right .badge-info {
-        transform: rotate(-90deg) !important;
     }
 }

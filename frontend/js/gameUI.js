@@ -33,7 +33,7 @@ let actionTimeout = null;
 // Турнирные очки
 let tournamentScores = {};
 
-// Функция для обновления положения кнопок и уведомлений
+// Функция для обновления положения кнопок в зависимости от количества карт
 function updateButtonsPositionByCardCount() {
     const hand = document.getElementById('myHand');
     if (!hand) return;
@@ -42,32 +42,31 @@ function updateButtonsPositionByCardCount() {
     const statusBar = document.getElementById('statusBar');
     const actionButtons = document.querySelector('.action-buttons');
     
-    // Сначала независимо обновляем статус-бар (уведомление)
+    // 8 карт и меньше -> cards-few (ВНИЗ)
+    // 9 карт и больше -> cards-many (НА УРОВНЕ 11-12)
     if (statusBar) {
         statusBar.classList.remove('cards-few', 'cards-many');
-        if (cardCount <= 10) {
-            statusBar.classList.add('cards-few');
+        if (cardCount <= 8) {
+            statusBar.classList.add('cards-few');   // ВНИЗ
         } else {
-            statusBar.classList.add('cards-many');
+            statusBar.classList.add('cards-many');  // НА УРОВНЕ 11-12
         }
     }
     
-    // Затем обновляем кнопки действий, если они появились в DOM
     if (actionButtons) {
         actionButtons.classList.remove('cards-few', 'cards-many');
-        if (cardCount <= 10) {
-            actionButtons.classList.add('cards-few');
+        if (cardCount <= 8) {
+            actionButtons.classList.add('cards-few');   // ВНИЗ
         } else {
-            actionButtons.classList.add('cards-many');
+            actionButtons.classList.add('cards-many');  // НА УРОВНЕ 11-12
         }
     }
     
-    console.log(`📊 Обновлено положение под количество карт (${cardCount}): ${cardCount <= 10 ? 'НИЖЕ (cards-few)' : 'ВЫШЕ (cards-many)'}`);
+    console.log(`📊 Обновлено положение: ${cardCount} карт - ${cardCount <= 8 ? 'ВНИЗ (cards-few)' : 'НА УРОВНЕ 11-12 (cards-many)'}`);
 }
 
 // =========================================================================
 // АВТОМАТИЧЕСКИЙ СЛЕДИТЕЛЬ (MutationObserver)
-// Перехватывает появление кнопки "ЗАБРАТЬ" и мгновенно ставит её на место
 // =========================================================================
 (function() {
     const observer = new MutationObserver((mutations) => {
@@ -88,7 +87,6 @@ function updateButtonsPositionByCardCount() {
             childList: true,
             subtree: true
         });
-        // Первичный запуск
         updateButtonsPositionByCardCount();
     }
 
@@ -152,7 +150,6 @@ function updatePlayerCountClass() {
             }
         }
         
-        /* Пульсация для карт-плейсхолдеров - плавное медленное сияние */
         @keyframes cardPlaceholderGlow {
             0%, 100% {
                 border-color: #d4af37;
@@ -300,7 +297,7 @@ function showLoadingScreen() {
     
     loadingOverlay.innerHTML = `
         <div style="font-size: 60px; margin-bottom: 20px; animation: cardSpin 2s ease-in-out infinite;">🎴</div>
-        <div style="color: #d4af37; font-size: 28px; letter-spacing: 3px; margin-bottom: 30px; text-shadow: 0 0 20px rgba(212,175,55,0.5);">SULTAN CASINO</div>
+        <div style="color: #d4af37; font-size: 28px; letter-spacing: 3px; margin-bottom: 30px; text-shadow: 0 0 20px rgba(212,175,55,0.5);">SULTAN</div>
         <div style="width: 250px; height: 4px; background: rgba(212, 175, 55, 0.2); border-radius: 2px; overflow: hidden; box-shadow: 0 0 10px rgba(212,175,55,0.3);">
             <div id="loadingBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #b8860b, #d4af37, #ffd700); border-radius: 2px; transition: width 0.5s ease;"></div>
         </div>
@@ -1257,16 +1254,13 @@ function updateTournamentDisplay() {
     const oldDisplay = document.getElementById('tournamentDisplay');
     if (oldDisplay) oldDisplay.remove();
     
-    // Удаляем старую кнопку-корону, если есть
     const oldCrownBtn = document.getElementById('crownToggleBtn');
     if (oldCrownBtn) oldCrownBtn.remove();
     
     if (!tournamentScores || Object.keys(tournamentScores).length === 0) return;
     
-    // Проверяем, мобильное ли устройство
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     
-    // НА МОБИЛЬНЫХ: добавляем кнопку-корону
     if (isMobile) {
         const crownBtn = document.createElement('div');
         crownBtn.id = 'crownToggleBtn';
@@ -1275,14 +1269,12 @@ function updateTournamentDisplay() {
         crownBtn.setAttribute('aria-label', 'Показать турнирную таблицу');
         document.body.appendChild(crownBtn);
         
-        // Обработчик нажатия на корону
         crownBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const display = document.getElementById('tournamentDisplay');
             if (display) {
                 display.classList.toggle('active');
-                // Анимация пульсации при нажатии
                 crownBtn.style.animation = 'crownPulse 0.3s ease';
                 setTimeout(() => {
                     crownBtn.style.animation = '';
@@ -1291,13 +1283,11 @@ function updateTournamentDisplay() {
         });
     }
     
-    // Создаём саму турнирную таблицу
     const display = document.createElement('div');
     display.id = 'tournamentDisplay';
     
-    // На мобильных добавляем класс active при открытии
     if (isMobile) {
-        display.classList.remove('active'); // по умолчанию закрыта
+        display.classList.remove('active');
     }
     
     const target = winTarget || 3;
@@ -1309,7 +1299,6 @@ function updateTournamentDisplay() {
         </div>
     `;
     
-    // Сортируем игроков по очкам (по убыванию)
     const sortedPlayers = Object.entries(tournamentScores).sort((a, b) => b[1] - a[1]);
     
     for (const [username, score] of sortedPlayers) {
@@ -1368,7 +1357,6 @@ function updateTournamentDisplay() {
         `;
     }
     
-    // На мобильных добавляем кнопку закрытия (крестик)
     if (isMobile) {
         html += `
             <button class="mobile-close-btn" onclick="event.stopPropagation(); document.getElementById('tournamentDisplay').classList.remove('active');">✕</button>
@@ -1378,7 +1366,6 @@ function updateTournamentDisplay() {
     display.innerHTML = html;
     document.body.appendChild(display);
     
-    // Добавляем обработчик клика на крестик (если через onclick не сработало)
     const closeBtn = display.querySelector('.mobile-close-btn');
     if (closeBtn && isMobile) {
         closeBtn.addEventListener('click', (e) => {
@@ -1388,9 +1375,7 @@ function updateTournamentDisplay() {
         });
     }
     
-    // Клик вне таблицы — закрываем (только на мобильных)
     if (isMobile) {
-        // Удаляем предыдущий обработчик, если есть
         if (window._closeTournamentHandler) {
             document.removeEventListener('click', window._closeTournamentHandler);
         }
@@ -1399,7 +1384,6 @@ function updateTournamentDisplay() {
             const displayEl = document.getElementById('tournamentDisplay');
             const crownBtnEl = document.getElementById('crownToggleBtn');
             if (displayEl && displayEl.classList.contains('active')) {
-                // Если клик не по таблице и не по короне
                 if (!displayEl.contains(e.target) && !crownBtnEl?.contains(e.target)) {
                     displayEl.classList.remove('active');
                 }
@@ -1421,7 +1405,6 @@ function startDealingAnimation(data) {
     dealerIndex = dealer;
     currentCardsPerPlayer = cardsPerPlayer;
     
-    // Обновляем класс для режима троих
     if (players && players.length === 3) {
         document.body.classList.add('players-3');
     } else {
@@ -1687,22 +1670,6 @@ function startDealingAnimation(data) {
             window.animateAllCardsDefeated();
         }
     });
-
-    socket.on('forceLeaveLobby', (data) => {
-        console.log('🔴 Принудительный выход из лобби:', data);
-        sessionStorage.removeItem('currentLobbyId');
-        setTimeout(() => {
-            window.location.href = '/lobby.html';
-        }, 500);
-    });
-
-    socket.on('exitConfirmed', () => {
-        console.log('✅ Выход из игры подтверждён');
-        sessionStorage.removeItem('currentLobbyId');
-        setTimeout(() => {
-            window.location.href = '/lobby.html';
-        }, 500);
-    });
     
     socket.once('startDealingAnimation', () => {
         animateCardDistribution(players, dealerIndex, overlay, cardsPerPlayer);
@@ -1845,7 +1812,6 @@ function updateGameState(state) {
     hideLoadingScreen();
     currentGameState = state;
     
-    // Обновляем класс для режима троих
     updatePlayerCountClass();
     
     if (dealingInProgress) {
@@ -2060,7 +2026,6 @@ function renderTable(table) {
     }
     zone.appendChild(container);
     
-    // Добавляем периодическую смену анимации для всех плейсхолдеров каждые 6 секунд
     const allPlaceholders = document.querySelectorAll('.card-placeholder');
     allPlaceholders.forEach(placeholder => {
         setInterval(() => {
@@ -2110,7 +2075,6 @@ function renderMyHand(hand, state) {
             handEl.innerHTML = '<div style="background:rgba(0,0,0,0.6); padding:15px 30px; border-radius:60px; text-align:center; color:#ff4444; font-size:22px; font-weight:bold;">💀 ВЫ ПРОИГРАЛИ 💀<br><span style="font-size:14px; color:#c9af7b;">Ожидайте следующий раунд</span></div>';
         }
         
-        // Обновляем позицию кнопок при пустой руке
         updateButtonsPositionByCardCount();
         return;
     }
@@ -2128,7 +2092,6 @@ function renderMyHand(hand, state) {
     
     setupTableDropZone();
     
-    // Обновляем позицию кнопок в зависимости от количества карт
     updateButtonsPositionByCardCount();
 }
 
@@ -2568,7 +2531,6 @@ function animateAllCardsDefeated() {
     
     if (allCards.length === 0) return;
     
-    // Получаем границы стола для ограничения анимации
     const tableZone = document.getElementById('tableZone');
     const tableRect = tableZone ? tableZone.getBoundingClientRect() : null;
     
@@ -2602,7 +2564,6 @@ function animateAllCardsDefeated() {
             cardClone.style.transform = `translate(${flyX}px, ${flyY}px) rotate(${flyRot}deg) scale(0.3)`;
             cardClone.style.opacity = '0';
             
-            // Создаем искры ТОЛЬКО в области карты
             createSparksExplosion(centerX, centerY, 50, tableRect);
             
             setTimeout(() => {
@@ -2616,7 +2577,6 @@ function animateAllCardsDefeated() {
         window.navigator.vibrate([80, 50, 80]);
     }
     
-    // Финальный всплеск искр только в центре стола
     setTimeout(() => {
         const tableZone = document.getElementById('tableZone');
         if (tableZone) {
@@ -2634,31 +2594,26 @@ function createSparksExplosion(x, y, count = 50, boundaryRect = null) {
             const particle = document.createElement('div');
             particle.className = 'spark-particle';
             
-            // Ограничиваем разлет искр областью стола
             let dx, dy;
             
             if (boundaryRect) {
-                // Искры разлетаются только в пределах стола
                 const angle = Math.random() * Math.PI * 2;
                 const maxDistance = Math.min(boundaryRect.width, boundaryRect.height) / 2;
                 const distance = 10 + Math.random() * (maxDistance * 0.8);
                 dx = Math.cos(angle) * distance;
                 dy = Math.sin(angle) * distance;
                 
-                // Проверяем, чтобы искра не вылетела за границы стола
                 const newX = x + dx;
                 const newY = y + dy;
                 
                 if (newX < boundaryRect.left + 20 || newX > boundaryRect.right - 20 ||
                     newY < boundaryRect.top + 20 || newY > boundaryRect.bottom - 20) {
-                    // Корректируем направление внутрь
                     const correctedDx = (boundaryRect.left + boundaryRect.width / 2 - x) * 0.5;
                     const correctedDy = (boundaryRect.top + boundaryRect.height / 2 - y) * 0.5;
                     dx = correctedDx + (Math.random() - 0.5) * 30;
                     dy = correctedDy + (Math.random() - 0.5) * 30;
                 }
             } else {
-                // Если границы не заданы, используем ограниченный разлет
                 const angle = Math.random() * Math.PI * 2;
                 const distance = 20 + Math.random() * 100;
                 dx = Math.cos(angle) * distance;
@@ -2670,7 +2625,6 @@ function createSparksExplosion(x, y, count = 50, boundaryRect = null) {
             const colors = ['#ffd700', '#ffcc00', '#ffaa00', '#ff8800', '#ff6600', '#ff4400', '#ffff00', '#ffdd55'];
             const color = colors[Math.floor(Math.random() * colors.length)];
             
-            // Небольшое случайное смещение начальной позиции
             const offsetX = (Math.random() - 0.5) * 30;
             const offsetY = (Math.random() - 0.5) * 30;
             
@@ -2744,7 +2698,6 @@ function animateSingleCardDefeated(cardElement) {
     }, 500);
 }
 
-
 function createSparkExplosion(x, y, count = 20) {
     createSparksExplosion(x, y, count);
 }
@@ -2755,7 +2708,6 @@ function createFlashEffect(x, y) {
     
     const tableRect = tableZone.getBoundingClientRect();
     
-    // Проверяем, что позиция внутри стола
     if (x < tableRect.left - 50 || x > tableRect.right + 50 ||
         y < tableRect.top - 50 || y > tableRect.bottom + 50) {
         return;
@@ -2789,7 +2741,6 @@ function createFinalFlash() {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
     
-    // Большая вспышка только в центре стола
     const bigFlash = document.createElement('div');
     bigFlash.style.cssText = `
         position: fixed;
@@ -2832,23 +2783,8 @@ function reorderPlayersForMe(players, myUsername) {
 }
 
 function exitGame() {
-    if (confirm('Выйти из игры?\n\nВаш ход будет передан другому игроку.\nПри ничьей краны будут возвращены.')) {
-        if (socket && socket.connected) {
-            socket.emit('playerExitGame', { 
-                username: playerName, 
-                lobbyId: currentLobbyId 
-            });
-        }
-        
-        // Дополнительная очистка
-        sessionStorage.removeItem('currentLobbyId');
-        
-        // Если через 2 секунды не перенаправились - делаем принудительно
-        setTimeout(() => {
-            if (window.location.pathname !== '/lobby.html') {
-                window.location.href = '/lobby.html';
-            }
-        }, 2000);
+    if (confirm('Выйти из игры? Вы вернетесь в лобби.')) {
+        window.location.href = '/lobby.html';
     }
 }
 
@@ -2886,7 +2822,6 @@ function adjustGameLayout() {
     }
 }
 
-// Функция для отключения hover-эффектов на мобильных
 function disableHoverOnMobile() {
     if ('ontouchstart' in window) {
         const style = document.createElement('style');
@@ -2917,8 +2852,6 @@ function disableHoverOnMobile() {
     }
 }
 
-
-// Вызываем при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     adjustGameLayout();
     disableHoverOnMobile();
