@@ -891,6 +891,50 @@ function initGameUI() {
         
         requestGameState();
     });
+
+    socket.on('roundOver', (data) => {
+        console.log('🏁 Раунд окончен:', data);
+        
+        const statusBar = document.getElementById('statusBar');
+        if (statusBar && !statusBar.hasAttribute('data-temp-message')) {
+            if (data.allWinners && data.allWinners.includes(playerName)) {
+                if (data.roundWinner === playerName) {
+                    statusBar.innerHTML = `🏆 ВЫ ПОБЕДИЛИ В РАУНДЕ! 🏆<br><span style="font-size:12px">+1 очко! Новый раунд начнется через несколько секунд...</span>`;
+                } else {
+                    statusBar.innerHTML = `✅ ВЫ СБРОСИЛИ ВСЕ КАРТЫ! ✅<br><span style="font-size:12px">+1 очко! Новый раунд начнется через несколько секунд...</span>`;
+                }
+            } else {
+                if (data.loser === playerName) {
+                    statusBar.innerHTML = `💀 ВЫ ОСТАЛИСЬ ДУРАКОМ 💀<br><span style="font-size:12px">Новый раунд начнется через несколько секунд...</span>`;
+                } else {
+                    statusBar.innerHTML = `📊 Раунд завершен. Победитель: ${data.roundWinner}<br><span style="font-size:12px">Новый раунд начнется через несколько секунд...</span>`;
+                }
+            }
+            statusBar.style.background = 'linear-gradient(135deg, #d4af37, #b8860b)';
+            statusBar.style.color = '#1a0f08';
+            statusBar.style.borderLeft = '6px solid #ffd700';
+            statusBar.style.fontWeight = 'bold';
+            statusBar.style.fontSize = '16px';
+            statusBar.style.padding = '15px 28px';
+        }
+        
+        // Блокируем карты на время ожидания нового раунда
+        const handEl = document.getElementById('myHand');
+        if (handEl) {
+            const cards = handEl.querySelectorAll('.my-card');
+            cards.forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.5';
+                card.draggable = false;
+            });
+        }
+        
+        // Скрываем кнопки действий
+        const buttonsDiv = document.getElementById('actionButtons');
+        if (buttonsDiv) {
+            buttonsDiv.style.display = 'none';
+        }
+    });
     
     socket.on('gameStarted', (data) => {
         console.log('🎮 Получен сигнал gameStarted, lobbyId:', data.lobbyId);
@@ -1401,6 +1445,16 @@ function startDealingAnimation(data) {
     if (dealingInProgress) return;
     dealingInProgress = true;
     
+    const handEl = document.getElementById('myHand');
+    if (handEl) {
+        const cards = handEl.querySelectorAll('.my-card');
+        cards.forEach(card => {
+            card.style.pointerEvents = 'none';
+            card.style.opacity = '0.5';
+            card.draggable = false;
+        });
+    }
+
     const { players, dealerIndex: dealer, cardsPerPlayer = 12 } = data;
     dealerIndex = dealer;
     currentCardsPerPlayer = cardsPerPlayer;
@@ -1799,6 +1853,18 @@ function finishDealingAnimation(overlay) {
         if (overlay.parentNode) overlay.remove();
         dealingInProgress = false;
         animationOverlay = null;
+        
+        // РАЗБЛОКИРУЕМ карты после завершения раздачи
+        const handEl = document.getElementById('myHand');
+        if (handEl) {
+            const cards = handEl.querySelectorAll('.my-card');
+            cards.forEach(card => {
+                card.style.pointerEvents = '';
+                card.style.opacity = '';
+                card.draggable = true;
+            });
+        }
+        
         if (currentGameState && currentGameState.myHand && currentGameState.myHand.length > 0) {
             updateGameStateDisplay(currentGameState);
         }
@@ -1814,13 +1880,94 @@ function updateGameState(state) {
     
     updatePlayerCountClass();
     
+    // Если анимация раздачи идёт - показываем только информацию об игроках, НО НЕ ДАЁМ ДЕЙСТВОВАТЬ
     if (dealingInProgress) {
-        console.log('Анимация раздачи еще идет, карты скрыты');
+        console.log('🎴 Анимация раздачи идёт, карты скрыты, действия заблокированы');
         if (state.players) {
             renderPlayersInfo(state.players, state.currentAttacker, state.currentDefender);
         }
         forceUpdateStatusBar();
+        
+        // Блокируем карты во время анимации раздачи
+        const handEl = document.getElementById('myHand');
+        if (handEl) {
+            const cards = handEl.querySelectorAll('.my-card');
+            cards.forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.5';
+                card.draggable = false;
+            });
+        }
+        
+        // Скрываем кнопки действий
+        const buttonsDiv = document.getElementById('actionButtons');
+        if (buttonsDiv) {
+            buttonsDiv.style.display = 'none';
+        }
         return;
+    }
+    
+    // Если игра заморожена (раунд закончен, ждём следующий) - блокируем все действия
+    if (state.gameFrozen) {
+        console.log('⏸️ Игра заморожена, действия заблокированы');
+        
+        // Скрываем кнопки действий
+        const buttonsDiv = document.getElementById('actionButtons');
+        if (buttonsDiv) {
+            buttonsDiv.style.display = 'none';
+        }
+        
+        // Делаем карты некликабельными и не перетаскиваемыми
+        const handEl = document.getElementById('myHand');
+        if (handEl) {
+            const cards = handEl.querySelectorAll('.my-card');
+            cards.forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.5';
+                card.draggable = false;
+            });
+        }
+        
+        // Отображаем информативное сообщение
+        const statusBar = document.getElementById('statusBar');
+        if (statusBar && !statusBar.hasAttribute('data-temp-message')) {
+            if (state.gameWinner) {
+                if (state.gameWinner.includes(playerName)) {
+                    statusBar.innerHTML = `🏆 ВЫ ПОБЕДИТЕЛЬ! 🏆<br><span style="font-size:12px">Ожидание следующего раунда...</span>`;
+                } else {
+                    statusBar.innerHTML = `🏆 ПОБЕДИТЕЛЬ: ${state.gameWinner} 🏆<br><span style="font-size:12px">Ожидание следующего раунда...</span>`;
+                }
+            } else {
+                statusBar.innerHTML = `⏳ ОЖИДАНИЕ СЛЕДУЮЩЕГО РАУНДА... ⏳`;
+            }
+            statusBar.style.background = 'rgba(212, 175, 55, 0.9)';
+            statusBar.style.color = '#1a0f08';
+        }
+        
+        // Всё равно обновляем отображение (но без интерактива)
+        if (state.players) {
+            renderPlayersInfo(state.players, state.currentAttacker, state.currentDefender);
+        }
+        renderTable(state.table);
+        
+        // Обновляем турнирную таблицу
+        if (state.consecutiveInfo) {
+            window.consecutiveInfo = state.consecutiveInfo;
+            updateTournamentDisplay();
+        }
+        
+        return;
+    }
+    
+    // Нормальное обновление - снимаем блокировку
+    const handEl = document.getElementById('myHand');
+    if (handEl) {
+        const cards = handEl.querySelectorAll('.my-card');
+        cards.forEach(card => {
+            card.style.pointerEvents = '';
+            card.style.opacity = '';
+            card.draggable = true;
+        });
     }
     
     updateGameStateDisplay(state);
@@ -2279,6 +2426,13 @@ function createDropEffect(x, y) {
 
 // ================== ОБРАБОТЧИК ДЕЙСТВИЯ ==================
 function handleCardAction(cardIndex) {
+    // Проверка на заморозку игры
+    if (currentGameState && (currentGameState.gameFrozen || !currentGameState.dealingComplete)) {
+        console.log('⏸️ Игра заморожена или идёт раздача, действия заблокированы');
+        showActionError('Игра временно заблокирована, ожидайте следующий раунд');
+        return;
+    }
+    
     if (isActionInProgress) {
         console.log('⏳ Действие уже выполняется, ожидайте...');
         showActionError('Подождите, действие выполняется...');
@@ -2393,6 +2547,14 @@ function showActionError(message) {
 // ================== ФУНКЦИЯ RENDERACTIONBUTTONS ==================
 function renderActionButtons(state) {
     let buttonsDiv = document.getElementById('actionButtons');
+    
+    // Если игра заморожена или раздача не завершена - скрываем кнопки
+    if (state.gameFrozen || !state.dealingComplete) {
+        if (buttonsDiv) {
+            buttonsDiv.style.display = 'none';
+        }
+        return;
+    }
     
     const table = state.table || [];
     const attackCount = table.filter(t => t.type === 'attack').length;

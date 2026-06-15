@@ -23,6 +23,10 @@ class Game {
         this.lobbyId = lobbyId;
         this.totalPot = totalPot;
         this._isDraw = false;
+        this._subRoundStarted = false;
+        this._subRoundFinished = false;
+        this._roundFinished = false;
+        this._drawProcessed = false;
         
         this._tournamentData = {
             consecutiveWinner: null,
@@ -86,8 +90,10 @@ class Game {
     startDealingAnimation() {
         console.log('🎴 Запуск анимации раздачи карт');
         
-        this.dealingComplete = false;
+        // Размораживаем игру перед раздачей
         this._gameFrozen = false;
+        this._roundOverSent = false;
+        this.dealingComplete = false;
         
         if (this.currentDealerIndex === null) {
             this.currentDealerIndex = Math.floor(Math.random() * this.players.length);
@@ -114,7 +120,9 @@ class Game {
         
         setTimeout(() => {
             this.dealingComplete = true;
+            this._gameFrozen = false;  // Убеждаемся что игра разморожена
             this.broadcast();
+            console.log('✅ Раздача завершена, игра активна');
         }, 6000);
     }
 
@@ -122,6 +130,10 @@ class Game {
         console.log('========================================');
         console.log('🎯 ЗАПУСК ДОПОЛНИТЕЛЬНОГО РАУНДА');
         console.log('========================================');
+        
+        // Размораживаем игру для дополнительного раунда
+        this._gameFrozen = false;
+        this._roundOverSent = false;
         
         const loserConsecutive = this._tournamentData.playersConsecutive.get(loserPlayer.username) || 0;
         
@@ -245,6 +257,10 @@ class Game {
         this._gameFrozen = false;
         this._roundWinner = null;
         this._subRoundCompleted = false;
+        this._subRoundStarted = false;
+        this._subRoundFinished = false;
+        this._roundFinished = false;
+        this._drawProcessed = false;
         this._previousLoser = null;
         this._isDraw = false;
         
@@ -252,6 +268,8 @@ class Game {
         
         this.dealCards();
         this.findFirstAttacker();
+        
+        console.log('✅ Игра разморожена для нового раунда');
     }
 
     dealCards() {
@@ -670,6 +688,7 @@ class Game {
     }
 
     checkWinCondition() {
+        // Если игра уже заморожена - не проверяем (предотвращает повторные проверки)
         if (this._gameFrozen) return false;
         
         const playersWithCards = this.players.filter(p => p.hand.length > 0);
@@ -678,8 +697,7 @@ class Game {
         if (this._previousLoser && playersWithCards.length === 1 && playersWithoutCards.length === 2) {
             if (this._roundOverSent) return true;
             this._roundOverSent = true;
-            this._gameFrozen = true;
-            this._subRoundCompleted = true;
+            this._gameFrozen = true;  // НЕМЕДЛЕННО замораживаем игру
             
             const subRoundWinner = playersWithoutCards.find(p => p.username !== this._previousLoser?.username);
             const subRoundLoser = playersWithCards[0];
@@ -700,7 +718,7 @@ class Game {
         if (playersWithCards.length === 1 && playersWithoutCards.length >= 1) {
             if (this._roundOverSent) return true;
             this._roundOverSent = true;
-            this._gameFrozen = true;
+            this._gameFrozen = true;  // НЕМЕДЛЕННО замораживаем игру
             
             const loser = playersWithCards[0];
             const winners = playersWithoutCards;
@@ -722,7 +740,7 @@ class Game {
         
         if (playersWithCards.length === 0 && !this._roundOverSent) {
             this._roundOverSent = true;
-            this._gameFrozen = true;
+            this._gameFrozen = true;  // НЕМЕДЛЕННО замораживаем игру
             this._isDraw = true;
             
             this.players.forEach(p => {

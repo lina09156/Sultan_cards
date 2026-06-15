@@ -96,7 +96,11 @@ module.exports = (io) => {
                 });
             }
             
-            if (game.dealingComplete && !game._gameFrozen) {
+            // Если игра заморожена - отправляем состояние заморозки
+            if (game._gameFrozen) {
+                const frozenState = game.getStateForPlayer(player.id);
+                socket.emit('gameState', frozenState);
+            } else if (game.dealingComplete && !game._gameFrozen) {
                 const state = game.getStateForPlayer(player.id);
                 socket.emit('gameState', state);
             } else if (!game.dealingComplete) {
@@ -374,7 +378,6 @@ module.exports = (io) => {
             if (callback) callback({ success: true });
         });
 
-        // НОВЫЙ ОБРАБОТЧИК ВЫХОДА ИЗ ИГРЫ
         socket.on('playerExitGame', async (data) => {
             const { username, lobbyId } = data;
             const game = activeGames.get(lobbyId);
@@ -393,7 +396,6 @@ module.exports = (io) => {
             console.log(`🚪 Игрок ${username} вышел из игры`);
             
             if (game.players.length === 2) {
-                // При 2 игроках - второй игрок автоматически побеждает
                 const winner = game.players.find(p => p.username !== username);
                 if (winner) {
                     await game.awardWinnerCoins(winner.username, game.totalPot);
@@ -413,7 +415,6 @@ module.exports = (io) => {
                     game.cleanupLobbyAfterGame(lobbyId);
                 }
             } else {
-                // При 3 игроках - объявляем ничью и возвращаем краны
                 const refundPerPlayer = Math.floor(game.totalPot / game.players.length);
                 
                 for (const player of game.players) {
@@ -445,7 +446,6 @@ module.exports = (io) => {
                     }
                 }
                 
-                // Очищаем лобби
                 const lobby = lobbies.get(lobbyId);
                 if (lobby) {
                     lobby.players = lobby.players.filter(p => p.username !== username);
@@ -578,7 +578,6 @@ module.exports = (io) => {
             game.currentDealerIndex = Math.floor(Math.random() * game.players.length);
             console.log(`🎲 Сохранён дилер для игры ${lobbyId}: ${game.players[game.currentDealerIndex]?.username} (индекс ${game.currentDealerIndex})`);
             
-            // Добавляем метод cleanupLobbyAfterGame в game
             game.cleanupLobbyAfterGame = (lobbyId) => {
                 const lobby = lobbies.get(lobbyId);
                 if (lobby) {
@@ -666,15 +665,21 @@ module.exports = (io) => {
                 socket.currentLobby = finalId;
                 socket.currentUsername = username;
                 socket.join(finalId);
-                if (game.dealingComplete && !game._gameFrozen) {
-                    socket.emit('gameState', game.getStateForPlayer(player.id));
-                }
+                
+                // Отправляем состояние (даже если игра заморожена)
+                const state = game.getStateForPlayer(player.id);
+                socket.emit('gameState', state);
             }
         });
 
         socket.on('attack', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                // НЕ обрабатываем действия если игра заморожена
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.attack(socket.id, data.cardIndex);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -684,6 +689,10 @@ module.exports = (io) => {
         socket.on('defend', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.defend(socket.id, data.cardIndex);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -693,6 +702,10 @@ module.exports = (io) => {
         socket.on('endTurn', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.endTurn(socket.id);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -702,6 +715,10 @@ module.exports = (io) => {
         socket.on('takeCards', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.takeCards(socket.id);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -711,6 +728,10 @@ module.exports = (io) => {
         socket.on('additionalAttack', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.additionalAttack(socket.id, data.cardIndex);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -720,6 +741,10 @@ module.exports = (io) => {
         socket.on('endAdditionalAttack', (data, callback) => {
             const game = activeGames.get(socket.currentLobby);
             if (game) {
+                if (game._gameFrozen) {
+                    if (callback) callback({ success: false, error: 'Раунд завершён, ожидайте следующий' });
+                    return;
+                }
                 const result = game.endAdditionalAttack(socket.id);
                 if (callback) callback(result);
                 afterGameAction(socket.currentLobby);
@@ -894,126 +919,201 @@ module.exports = (io) => {
             const game = activeGames.get(lobbyId);
             if (!game) return;
             
-            if (game._gameFrozen && game._roundOverSent) {
-                const scores = tournamentScores.get(lobbyId);
-                const winners = game.players.filter(p => p.hand.length === 0);
-                const losers = game.players.filter(p => p.hand.length > 0);
+            // Если игра заморожена - не обрабатываем действия, НО продолжаем следить за турнирными очками
+            if (game._gameFrozen) {
+                console.log('⏸️ Игра заморожена, ожидание нового раунда...');
                 
-                const wasDraw = game._isDraw === true;
-                
-                if (wasDraw) {
-                    console.log('🤝 ИГРА ЗАВЕРШЕНА НИЧЬЕЙ!');
+                // Если есть турнирные очки и игра завершена - обрабатываем финал
+                if (game._roundOverSent) {
+                    const scores = tournamentScores.get(lobbyId);
+                    if (!scores) return;
                     
-                    game.refundCoinsOnDraw().then(() => {
-                        game.players.forEach(p => {
-                            if (p.socket && p.socket.connected) {
-                                p.socket.emit('gameOver', { 
-                                    winner: 'Ничья - серия прервана', 
-                                    isDraw: true
+                    const winners = game.players.filter(p => p.hand.length === 0);
+                    const losers = game.players.filter(p => p.hand.length > 0);
+                    
+                    if (game._isDraw === true) {
+                        if (!game._drawProcessed) {
+                            game._drawProcessed = true;
+                            console.log('🤝 ИГРА ЗАВЕРШЕНА НИЧЬЕЙ (обработка)');
+                            
+                            game.refundCoinsOnDraw().then(() => {
+                                game.players.forEach(p => {
+                                    if (p.socket && p.socket.connected) {
+                                        p.socket.emit('gameOver', { 
+                                            winner: 'Ничья - серия прервана', 
+                                            isDraw: true
+                                        });
+                                        p.socket.emit('forceLeaveLobby', { message: 'Игра завершена ничьей' });
+                                        p.socket.currentLobby = null;
+                                        p.socket.currentUsername = null;
+                                    }
                                 });
-                                p.socket.emit('forceLeaveLobby', { message: 'Игра завершена ничьей' });
-                                p.socket.currentLobby = null;
-                                p.socket.currentUsername = null;
-                            }
-                        });
-                        
-                        const lobby = lobbies.get(lobbyId);
-                        if (lobby) {
-                            lobbies.delete(lobbyId);
-                            readyStatus.delete(lobbyId);
-                        }
-                        
-                        setTimeout(() => {
-                            activeGames.delete(lobbyId);
-                            tournamentScores.delete(lobbyId);
-                            broadcastLobbiesList();
-                        }, 2000);
-                    });
-                    return;
-                }
-                
-                if (game.players.length === 3 && losers.length === 1 && winners.length >= 1 && !game._subRoundCompleted) {
-                    const loser = losers[0];
-                    
-                    const consecutiveInfo = game._tournamentData?.playersConsecutive?.get(loser.username) || 0;
-                    
-                    if (consecutiveInfo >= 1) {
-                        console.log(`⚠️ ${loser.username} имеет серию побед (${consecutiveInfo})! Доп.раунд не запускается!`);
-                        
-                        game._isDraw = true;
-                        
-                        game.refundCoinsOnDraw().then(() => {
-                            game.players.forEach(p => {
-                                if (p.socket && p.socket.connected) {
-                                    p.socket.emit('chatMessage', {
-                                        username: '⚠️ СИСТЕМА',
-                                        message: `${loser.username} имел серию из ${consecutiveInfo} побед, но проиграл! Ничья!`
-                                    });
-                                    p.socket.emit('gameOver', { 
-                                        winner: 'Ничья - серия султана прервана', 
-                                        isDraw: true
-                                    });
-                                    p.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
-                                    p.socket.currentLobby = null;
-                                    p.socket.currentUsername = null;
+                                
+                                const lobby = lobbies.get(lobbyId);
+                                if (lobby) {
+                                    lobbies.delete(lobbyId);
+                                    readyStatus.delete(lobbyId);
                                 }
+                                
+                                setTimeout(() => {
+                                    activeGames.delete(lobbyId);
+                                    tournamentScores.delete(lobbyId);
+                                    broadcastLobbiesList();
+                                }, 2000);
                             });
-                            
-                            const lobby = lobbies.get(lobbyId);
-                            if (lobby) {
-                                lobbies.delete(lobbyId);
-                                readyStatus.delete(lobbyId);
-                            }
-                            
-                            setTimeout(() => {
-                                activeGames.delete(lobbyId);
-                                tournamentScores.delete(lobbyId);
-                                broadcastLobbiesList();
-                            }, 2000);
-                        });
+                        }
                         return;
                     }
                     
-                    console.log('🎯 Запуск дополнительного раунда');
-                    
-                    setTimeout(() => {
-                        const currentGame = activeGames.get(lobbyId);
-                        if (currentGame) {
-                            currentGame._subRoundCompleted = false;
-                            currentGame.startSubRound(loser, scores, lobbyId);
-                        }
-                    }, 2000);
-                    return;
-                }
-                
-                if (game._subRoundCompleted && winners.length >= 1 && losers.length === 1) {
-                    const subRoundWinner = winners.find(p => p.username !== game._previousLoser?.username);
-                    
-                    if (subRoundWinner) {
-                        const currentScore = (scores.get(subRoundWinner.username) || 0) + 1;
-                        scores.set(subRoundWinner.username, currentScore);
+                    // Обработка дополнительного раунда для 3 игроков
+                    if (game.players.length === 3 && losers.length === 1 && winners.length >= 1 && !game._subRoundCompleted && !game._subRoundStarted) {
+                        const loser = losers[0];
+                        const consecutiveInfo = game._tournamentData?.playersConsecutive?.get(loser.username) || 0;
                         
-                        const mainRoundWinner = game.players.find(p => 
-                            p.hand.length === 0 && p.username !== subRoundWinner.username && p.username !== game._previousLoser?.username
-                        );
-                        if (mainRoundWinner) {
-                            const mainScore = (scores.get(mainRoundWinner.username) || 0) + 1;
-                            scores.set(mainRoundWinner.username, mainScore);
+                        if (consecutiveInfo >= 1) {
+                            if (!game._drawProcessed) {
+                                game._drawProcessed = true;
+                                console.log(`⚠️ ${loser.username} имеет серию побед (${consecutiveInfo})! Ничья!`);
+                                game._isDraw = true;
+                                
+                                game.refundCoinsOnDraw().then(() => {
+                                    game.players.forEach(p => {
+                                        if (p.socket && p.socket.connected) {
+                                            p.socket.emit('chatMessage', {
+                                                username: '⚠️ СИСТЕМА',
+                                                message: `${loser.username} имел серию из ${consecutiveInfo} побед, но проиграл! Ничья!`
+                                            });
+                                            p.socket.emit('gameOver', { 
+                                                winner: 'Ничья - серия султана прервана', 
+                                                isDraw: true
+                                            });
+                                            p.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                                            p.socket.currentLobby = null;
+                                            p.socket.currentUsername = null;
+                                        }
+                                    });
+                                    
+                                    const lobby = lobbies.get(lobbyId);
+                                    if (lobby) {
+                                        lobbies.delete(lobbyId);
+                                        readyStatus.delete(lobbyId);
+                                    }
+                                    
+                                    setTimeout(() => {
+                                        activeGames.delete(lobbyId);
+                                        tournamentScores.delete(lobbyId);
+                                        broadcastLobbiesList();
+                                    }, 2000);
+                                });
+                            }
+                            return;
                         }
+                        
+                        if (!game._subRoundStarted) {
+                            game._subRoundStarted = true;
+                            console.log('🎯 Запуск дополнительного раунда');
+                            
+                            setTimeout(() => {
+                                const currentGame = activeGames.get(lobbyId);
+                                if (currentGame && currentGame._gameFrozen) {
+                                    currentGame._subRoundStarted = false;
+                                    currentGame.startSubRound(loser, scores, lobbyId);
+                                }
+                            }, 2000);
+                        }
+                        return;
+                    }
+                    
+                    // Обработка завершения дополнительного раунда
+                    if (game._subRoundCompleted && winners.length >= 1 && losers.length === 1 && !game._subRoundFinished) {
+                        game._subRoundFinished = true;
+                        const subRoundWinner = winners.find(p => p.username !== game._previousLoser?.username);
+                        
+                        if (subRoundWinner) {
+                            const currentScore = (scores.get(subRoundWinner.username) || 0) + 1;
+                            scores.set(subRoundWinner.username, currentScore);
+                            
+                            const mainRoundWinner = game.players.find(p => 
+                                p.hand.length === 0 && p.username !== subRoundWinner.username && p.username !== game._previousLoser?.username
+                            );
+                            if (mainRoundWinner) {
+                                const mainScore = (scores.get(mainRoundWinner.username) || 0) + 1;
+                                scores.set(mainRoundWinner.username, mainScore);
+                            }
+                            
+                            game.players.forEach(p => {
+                                if (p.socket && p.socket.connected) {
+                                    p.socket.emit('tournamentScoresUpdate', {
+                                        scores: Object.fromEntries(scores),
+                                        roundWinner: subRoundWinner.username,
+                                        loser: losers[0]?.username,
+                                        winTarget: game.consecutiveWinsNeeded,
+                                        isSubRound: true
+                                    });
+                                }
+                            });
+                            
+                            game.checkSultan(lobbyId, scores, subRoundWinner.username, true).then(result => {
+                                if (result === 'draw') return;
+                                if (result) {
+                                    const lobby = lobbies.get(lobbyId);
+                                    if (lobby) {
+                                        lobby.players.forEach(player => {
+                                            const playerSocket = io.sockets.sockets.get(player.socketId);
+                                            if (playerSocket && playerSocket.connected) {
+                                                playerSocket.currentLobby = null;
+                                                playerSocket.currentUsername = null;
+                                            }
+                                        });
+                                        lobbies.delete(lobbyId);
+                                        readyStatus.delete(lobbyId);
+                                    }
+                                    setTimeout(() => {
+                                        activeGames.delete(lobbyId);
+                                        tournamentScores.delete(lobbyId);
+                                        broadcastLobbiesList();
+                                    }, 5000);
+                                } else {
+                                    setTimeout(() => {
+                                        const g = activeGames.get(lobbyId);
+                                        if (g && !g._isDraw) {
+                                            g._subRoundCompleted = false;
+                                            g._subRoundStarted = false;
+                                            g._subRoundFinished = false;
+                                            g._previousLoser = null;
+                                            g._isDraw = false;
+                                            g._roundOverSent = false;
+                                            g._gameFrozen = false;  // РАЗМОРАЖИВАЕМ
+                                            g.resetForNewRound();
+                                            setTimeout(() => g.startDealingAnimation(), 1000);
+                                        }
+                                    }, 5000);
+                                }
+                            });
+                        }
+                        return;
+                    }
+                    
+                    // Обработка обычного раунда (без дополнительного)
+                    if (winners.length >= 1 && losers.length === 1 && !game._subRoundCompleted && !game._roundFinished) {
+                        game._roundFinished = true;
+                        const roundWinner = winners[0].username;
+                        const loser = losers[0].username;
+                        const currentScore = (scores.get(roundWinner) || 0) + 1;
+                        scores.set(roundWinner, currentScore);
                         
                         game.players.forEach(p => {
-                            if (p.socket) {
+                            if (p.socket && p.socket.connected) {
                                 p.socket.emit('tournamentScoresUpdate', {
                                     scores: Object.fromEntries(scores),
-                                    roundWinner: subRoundWinner.username,
-                                    loser: losers[0]?.username,
-                                    winTarget: game.consecutiveWinsNeeded,
-                                    isSubRound: true
+                                    roundWinner,
+                                    loser,
+                                    winTarget: game.consecutiveWinsNeeded
                                 });
                             }
                         });
                         
-                        game.checkSultan(lobbyId, scores, subRoundWinner.username, true).then(result => {
+                        game.checkSultan(lobbyId, scores, roundWinner, false).then(result => {
                             if (result === 'draw') return;
                             if (result) {
                                 const lobby = lobbies.get(lobbyId);
@@ -1038,8 +1138,12 @@ module.exports = (io) => {
                                     const g = activeGames.get(lobbyId);
                                     if (g && !g._isDraw) {
                                         g._subRoundCompleted = false;
+                                        g._subRoundStarted = false;
+                                        g._roundFinished = false;
                                         g._previousLoser = null;
                                         g._isDraw = false;
+                                        g._roundOverSent = false;
+                                        g._gameFrozen = false;  // РАЗМОРАЖИВАЕМ
                                         g.resetForNewRound();
                                         setTimeout(() => g.startDealingAnimation(), 1000);
                                     }
@@ -1047,62 +1151,184 @@ module.exports = (io) => {
                             }
                         });
                     }
-                    return;
                 }
+                return;
+            }
+            
+            // Если игра не заморожена - проверяем окончание раунда
+            if (!game._gameFrozen && game._roundOverSent) {
+                // Раунд только что закончился, замораживаем игру
+                game._gameFrozen = true;
+                console.log('🔒 Игра заморожена после окончания раунда');
                 
-                if (winners.length >= 1 && losers.length === 1 && !game._subRoundCompleted) {
-                    const roundWinner = winners[0].username;
-                    const loser = losers[0].username;
-                    const currentScore = (scores.get(roundWinner) || 0) + 1;
-                    scores.set(roundWinner, currentScore);
-                    
-                    game.players.forEach(p => {
-                        if (p.socket) {
-                            p.socket.emit('tournamentScoresUpdate', {
-                                scores: Object.fromEntries(scores),
-                                roundWinner,
-                                loser,
-                                winTarget: game.consecutiveWinsNeeded
+                const scores = tournamentScores.get(lobbyId);
+                const winners = game.players.filter(p => p.hand.length === 0);
+                const losers = game.players.filter(p => p.hand.length > 0);
+                
+                // Инициализируем флаги для отслеживания состояния
+                if (!game._subRoundStarted) game._subRoundStarted = false;
+                if (!game._subRoundFinished) game._subRoundFinished = false;
+                if (!game._roundFinished) game._roundFinished = false;
+                if (!game._drawProcessed) game._drawProcessed = false;
+                
+                const wasDraw = game._isDraw === true;
+                
+                if (wasDraw) {
+                    if (!game._drawProcessed) {
+                        game._drawProcessed = true;
+                        console.log('🤝 ИГРА ЗАВЕРШЕНА НИЧЬЕЙ!');
+                        
+                        game.refundCoinsOnDraw().then(() => {
+                            game.players.forEach(p => {
+                                if (p.socket && p.socket.connected) {
+                                    p.socket.emit('gameOver', { 
+                                        winner: 'Ничья - серия прервана', 
+                                        isDraw: true
+                                    });
+                                    p.socket.emit('forceLeaveLobby', { message: 'Игра завершена ничьей' });
+                                    p.socket.currentLobby = null;
+                                    p.socket.currentUsername = null;
+                                }
                             });
-                        }
-                    });
-                    
-                    game.checkSultan(lobbyId, scores, roundWinner, false).then(result => {
-                        if (result === 'draw') return;
-                        if (result) {
+                            
                             const lobby = lobbies.get(lobbyId);
                             if (lobby) {
-                                lobby.players.forEach(player => {
-                                    const playerSocket = io.sockets.sockets.get(player.socketId);
-                                    if (playerSocket && playerSocket.connected) {
-                                        playerSocket.currentLobby = null;
-                                        playerSocket.currentUsername = null;
-                                    }
-                                });
                                 lobbies.delete(lobbyId);
                                 readyStatus.delete(lobbyId);
                             }
+                            
                             setTimeout(() => {
                                 activeGames.delete(lobbyId);
                                 tournamentScores.delete(lobbyId);
                                 broadcastLobbiesList();
-                            }, 5000);
-                        } else {
-                            setTimeout(() => {
-                                const g = activeGames.get(lobbyId);
-                                if (g && !g._isDraw) {
-                                    g._subRoundCompleted = false;
-                                    g._previousLoser = null;
-                                    g._isDraw = false;
-                                    g.resetForNewRound();
-                                    setTimeout(() => g.startDealingAnimation(), 1000);
-                                }
-                            }, 5000);
-                        }
-                    });
+                            }, 2000);
+                        });
+                    }
+                    return;
                 }
+                
+                // Для 3 игроков - запускаем дополнительный раунд
+                if (game.players.length === 3 && losers.length === 1 && winners.length >= 1 && !game._subRoundCompleted && !game._subRoundStarted) {
+                    const loser = losers[0];
+                    const consecutiveInfo = game._tournamentData?.playersConsecutive?.get(loser.username) || 0;
+                    
+                    if (consecutiveInfo >= 1) {
+                        if (!game._drawProcessed) {
+                            game._drawProcessed = true;
+                            console.log(`⚠️ ${loser.username} имеет серию побед (${consecutiveInfo})! Ничья!`);
+                            game._isDraw = true;
+                            
+                            game.refundCoinsOnDraw().then(() => {
+                                game.players.forEach(p => {
+                                    if (p.socket && p.socket.connected) {
+                                        p.socket.emit('chatMessage', {
+                                            username: '⚠️ СИСТЕМА',
+                                            message: `${loser.username} имел серию из ${consecutiveInfo} побед, но проиграл! Ничья!`
+                                        });
+                                        p.socket.emit('gameOver', { 
+                                            winner: 'Ничья - серия султана прервана', 
+                                            isDraw: true
+                                        });
+                                        p.socket.emit('forceLeaveLobby', { message: 'Игра завершена' });
+                                        p.socket.currentLobby = null;
+                                        p.socket.currentUsername = null;
+                                    }
+                                });
+                                
+                                const lobby = lobbies.get(lobbyId);
+                                if (lobby) {
+                                    lobbies.delete(lobbyId);
+                                    readyStatus.delete(lobbyId);
+                                }
+                                
+                                setTimeout(() => {
+                                    activeGames.delete(lobbyId);
+                                    tournamentScores.delete(lobbyId);
+                                    broadcastLobbiesList();
+                                }, 2000);
+                            });
+                        }
+                        return;
+                    }
+                    
+                    game._subRoundStarted = true;
+                    console.log('🎯 Запуск дополнительного раунда');
+                    
+                    setTimeout(() => {
+                        const currentGame = activeGames.get(lobbyId);
+                        if (currentGame) {
+                            currentGame._subRoundCompleted = false;
+                            currentGame._subRoundStarted = false;
+                            currentGame.startSubRound(loser, scores, lobbyId);
+                        }
+                    }, 2000);
+                    return;
+                }
+                
+                // Обычный финал раунда (без дополнительного)
+                if (!game._roundFinished) {
+                    game._roundFinished = true;
+                    
+                    if (winners.length >= 1 && losers.length === 1 && !game._subRoundCompleted) {
+                        const roundWinner = winners[0].username;
+                        const loser = losers[0].username;
+                        const currentScore = (scores.get(roundWinner) || 0) + 1;
+                        scores.set(roundWinner, currentScore);
+                        
+                        game.players.forEach(p => {
+                            if (p.socket && p.socket.connected) {
+                                p.socket.emit('tournamentScoresUpdate', {
+                                    scores: Object.fromEntries(scores),
+                                    roundWinner,
+                                    loser,
+                                    winTarget: game.consecutiveWinsNeeded
+                                });
+                            }
+                        });
+                        
+                        game.checkSultan(lobbyId, scores, roundWinner, false).then(result => {
+                            if (result === 'draw') return;
+                            if (result) {
+                                const lobby = lobbies.get(lobbyId);
+                                if (lobby) {
+                                    lobby.players.forEach(player => {
+                                        const playerSocket = io.sockets.sockets.get(player.socketId);
+                                        if (playerSocket && playerSocket.connected) {
+                                            playerSocket.currentLobby = null;
+                                            playerSocket.currentUsername = null;
+                                        }
+                                    });
+                                    lobbies.delete(lobbyId);
+                                    readyStatus.delete(lobbyId);
+                                }
+                                setTimeout(() => {
+                                    activeGames.delete(lobbyId);
+                                    tournamentScores.delete(lobbyId);
+                                    broadcastLobbiesList();
+                                }, 5000);
+                            } else {
+                                setTimeout(() => {
+                                    const g = activeGames.get(lobbyId);
+                                    if (g && !g._isDraw) {
+                                        g._subRoundCompleted = false;
+                                        g._subRoundStarted = false;
+                                        g._roundFinished = false;
+                                        g._previousLoser = null;
+                                        g._isDraw = false;
+                                        g._roundOverSent = false;
+                                        g._gameFrozen = false;
+                                        g.resetForNewRound();
+                                        setTimeout(() => g.startDealingAnimation(), 1000);
+                                    }
+                                }, 5000);
+                            }
+                        });
+                    }
+                }
+                return;
             }
             
+            // Обычная игра - просто транслируем состояние
             if (!game._gameFrozen) {
                 game.broadcast();
             }
