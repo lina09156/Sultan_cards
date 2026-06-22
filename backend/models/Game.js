@@ -842,35 +842,28 @@ class Game {
 
     async awardWinnerCoins(winnerUsername, totalPot) {
         try {
-            const fetch = require('node-fetch');
+            const User = require('./User');
             
-            const winnerResponse = await fetch('http://localhost:3000/api/auth/add-coins', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: winnerUsername, amount: totalPot })
-            });
-            
-            const winnerData = await winnerResponse.json();
-            if (winnerData.success) {
+            const winner = await User.findOne({ username: winnerUsername });
+            if (winner) {
+                winner.coins += totalPot;
+                await winner.save();
+                
                 this.players.forEach(p => {
                     if (p.socket && p.socket.connected) {
                         p.socket.emit('chatMessage', {
                             username: '🏆 СИСТЕМА',
                             message: `${winnerUsername} выиграл ${totalPot} кранов! 👑`
                         });
+                        // Обновляем баланс на клиенте
+                        p.socket.emit('coinsUpdated', { coins: winner.coins });
                     }
                 });
+                
+                console.log(`💰 ${winnerUsername} выиграл ${totalPot} кранов. Новый баланс: ${winner.coins}`);
+                return true;
             }
-            
-            for (const player of this.players) {
-                const statsResponse = await fetch(`http://localhost:3000/api/auth/check?username=${player.username}`);
-                const statsData = await statsResponse.json();
-                if (player.socket && player.socket.connected && statsData.stats) {
-                    player.socket.emit('coinsUpdated', { coins: statsData.stats.coins });
-                }
-            }
-            
-            return true;
+            return false;
         } catch (error) {
             console.error('Ошибка начисления призовых:', error);
             return false;
@@ -879,23 +872,23 @@ class Game {
 
     async refundCoinsOnDraw() {
         try {
-            const fetch = require('node-fetch');
+            const User = require('./User');
             const refundPerPlayer = Math.floor(this.totalPot / this.players.length);
             
             for (const player of this.players) {
-                const refundResponse = await fetch('http://localhost:3000/api/auth/add-coins', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: player.username, amount: refundPerPlayer })
-                });
-                
-                const refundData = await refundResponse.json();
-                if (refundData.success && player.socket && player.socket.connected) {
-                    player.socket.emit('coinsUpdated', { coins: refundData.coins });
-                    player.socket.emit('chatMessage', {
-                        username: '🔄 СИСТЕМА',
-                        message: `Ничья! Вам возвращено ${refundPerPlayer} кранов.`
-                    });
+                const user = await User.findOne({ username: player.username });
+                if (user) {
+                    user.coins += refundPerPlayer;
+                    await user.save();
+                    
+                    if (player.socket && player.socket.connected) {
+                        player.socket.emit('coinsUpdated', { coins: user.coins });
+                        player.socket.emit('chatMessage', {
+                            username: '🔄 СИСТЕМА',
+                            message: `Ничья! Вам возвращено ${refundPerPlayer} кранов.`
+                        });
+                    }
+                    console.log(`💰 ${player.username} возвращено ${refundPerPlayer} кранов. Новый баланс: ${user.coins}`);
                 }
             }
             return true;

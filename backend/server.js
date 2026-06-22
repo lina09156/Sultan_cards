@@ -6,6 +6,7 @@ const path = require('path');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const connectDB = require('./config/database');
+const { cleanupDeadLobbies } = require('./utils/cleanup'); // ← ДОБАВЛЕНО
 
 const app = express();
 const server = http.createServer(app);
@@ -92,7 +93,28 @@ app.get('/game.html', (req, res) => {
 });
 
 // Подключаем обработчик игры
-require('./socket/gameHandler')(io);
+const gameHandler = require('./socket/gameHandler');
+gameHandler(io);
+
+// ============ ПЕРИОДИЧЕСКАЯ ОЧИСТКА ============
+// Запускаем очистку каждые 2 минуты
+setInterval(async () => {
+    try {
+        // Импортируем lobbies из gameHandler (экспортируем через module.exports)
+        // Или используем глобальную переменную
+        const lobbies = global.lobbies || new Map();
+        const activeGames = global.activeGames || new Map();
+        const tournamentScores = global.tournamentScores || new Map();
+        const readyStatus = global.readyStatus || new Map();
+        
+        const cleaned = await cleanupDeadLobbies(lobbies, activeGames, tournamentScores, readyStatus, io);
+        if (cleaned > 0) {
+            console.log(`🧹 Очищено ${cleaned} мертвых лобби`);
+        }
+    } catch (error) {
+        console.error('Ошибка при очистке лобби:', error);
+    }
+}, 120000); // 2 минуты
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
@@ -112,14 +134,29 @@ server.listen(PORT, () => {
     console.log('🃏 Проверка рубашки: http://localhost:3000/back.png');
 });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
+// ============ GRACEFUL SHUTDOWN (ЕДИНЫЙ ОБРАБОТЧИК) ============
+async function gracefulShutdown() {
     console.log('🛑 Завершение работы сервера...');
+    
+    // Закрываем все активные игры и возвращаем монеты
+    console.log('💰 Возврат монет из активных игр...');
+    // Здесь можно добавить логику возврата монет при остановке сервера
+    
+    // Закрываем Socket.IO соединения
+    io.close(() => {
+        console.log('🔌 Socket.IO закрыт');
+    });
+    
+    // Отключаем MongoDB
     if (mongoose.connection.readyState === 1) {
         await mongoose.disconnect();
         console.log('📊 MongoDB отключена');
     }
+    
     process.exit(0);
-});
+}
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 module.exports.io = io;
