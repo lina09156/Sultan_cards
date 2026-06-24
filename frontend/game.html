@@ -333,7 +333,6 @@
                 overflow: hidden !important;
                 padding: 0 !important;
                 background: linear-gradient(145deg, #1a5c3a, #0e3a22) !important;
-                border: 2px.5 solid #e6b422 !important;
                 border: 2.5px solid #e6b422 !important;
                 box-shadow: 0 6px 22px rgba(0,0,0,0.6), 0 0 0 3px rgba(230, 180, 34, 0.3) !important;
                 cursor: grab;
@@ -1032,12 +1031,12 @@
             const header = container.querySelector('.chat-header');
             if (!container || !header) return;
 
-            // Сброс в дефолтную позицию (над картами на руках)
+            // Сброс в дефолтную позицию (над панелью карт)
             function resetToDefaultPosition() {
-                const initialLeft = 35;
-                // Изначально ставим над панелью карт с запасом по высоте
-                // (высота экрана - высота панели (~220px) - высота новой увеличенной иконки (68px))
-                const initialTop = window.innerHeight - 260 - 68;
+                const initialLeft = 20; // Сдвинуто левее к краю экрана
+                // Изначально ставим ровно над левым скругленным углом панели карт
+                // (высота экрана - высота панели (~200px) - высота новой увеличенной иконки (68px))
+                const initialTop = window.innerHeight - 205 - 68;
                 container.style.bottom = 'auto';
                 container.style.left = initialLeft + 'px';
                 container.style.top = Math.max(20, initialTop) + 'px';
